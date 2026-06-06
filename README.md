@@ -185,11 +185,11 @@ Visualization Dashboard
 - Pandas
 - Scikit-learn
 
----
 
 # Project Structure
 
-project/
+```text
+NovaQure/
 │
 ├── backend/
 │   ├── api/
@@ -218,8 +218,10 @@ project/
 ├── notebooks/
 │
 └── docs/
+````
 
----
+
+
 
 # Datasets
 
