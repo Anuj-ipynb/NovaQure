@@ -1,0 +1,13 @@
+numpy
+pandas
+
+scikit-learn
+
+langchain
+langchain-community
+
+pydantic
+
+pytest
+rich
+tqdm
