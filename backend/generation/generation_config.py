@@ -17,3 +17,9 @@ class GenerationConfig:
     )
 
     MAX_MOLECULES = 100
+
+    NOVEL_MOLECULE_COUNT = 100
+
+    LATENT_DIM = 128
+
+    MUTATIONS_PER_MOLECULE = 3
