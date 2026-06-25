@@ -1,10 +1,13 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+
 from backend.api.routes import (
     health_router,
     project_router,
+    experiment_router,
 )
+
 from backend.database.init_db import initialize_database
 
 
@@ -49,7 +52,10 @@ app.include_router(
     project_router,
     prefix="/api/v1",
 )
-
+app.include_router(
+    experiment_router,
+    prefix="/api/v1",
+)
 # ---------------------------------------------------------
 # Root Endpoint
 # ---------------------------------------------------------
