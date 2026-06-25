@@ -7,6 +7,7 @@ from backend.api.routes import (
     project_router,
     experiment_router,
     molecule_router,
+    ranking_router,
 )
 
 from backend.database.init_db import initialize_database
@@ -59,6 +60,10 @@ app.include_router(
 )
 app.include_router(
     molecule_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    ranking_router,
     prefix="/api/v1",
 )
 
