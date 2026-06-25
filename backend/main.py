@@ -6,6 +6,7 @@ from backend.api.routes import (
     health_router,
     project_router,
     experiment_router,
+    molecule_router,
 )
 
 from backend.database.init_db import initialize_database
@@ -56,6 +57,11 @@ app.include_router(
     experiment_router,
     prefix="/api/v1",
 )
+app.include_router(
+    molecule_router,
+    prefix="/api/v1",
+)
+
 # ---------------------------------------------------------
 # Root Endpoint
 # ---------------------------------------------------------
