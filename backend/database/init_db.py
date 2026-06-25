@@ -1,22 +1,25 @@
 """
-Database initialization utilities.
+Database initialization.
 
-Responsible for creating tables during
-development.
-
-Production environments should use
-Alembic migrations.
+Imports every model before creating tables.
 """
 
 from backend.database.base import Base
 from backend.database.session import engine
 
+# -------------------------------
+# Import every model here
+# -------------------------------
 
-def initialize_database() -> None:
-    """
-    Create all registered tables.
+from backend.models.user import User
+from backend.models.project import Project
+from backend.models.experiment import Experiment
+from backend.models.molecule import Molecule
+from backend.models.evaluation import Evaluation
+from backend.models.ranking import Ranking
+from backend.models.agent_log import AgentLog
 
-    This is intended for local development.
-    """
+
+def initialize_database():
 
     Base.metadata.create_all(bind=engine)

@@ -1,10 +1,14 @@
-from .agent_log import AgentLog
-from .evaluation import Evaluation
+"""
+Database models.
+"""
+
+from .user import User
+from .project import Project
 from .experiment import Experiment
 from .molecule import Molecule
-from .project import Project
+from .evaluation import Evaluation
 from .ranking import Ranking
-from .user import User
+from .agent_log import AgentLog
 
 __all__ = [
     "User",
