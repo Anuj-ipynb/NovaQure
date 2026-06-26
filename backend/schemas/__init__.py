@@ -5,10 +5,18 @@ Contains every request and response schema
 used throughout the backend.
 """
 
+# ---------------------------------------------------------
+# Base Schemas
+# ---------------------------------------------------------
+
 from .base_schema import (
     NovaQureSchema,
     TimestampSchema,
 )
+
+# ---------------------------------------------------------
+# Project Schemas
+# ---------------------------------------------------------
 
 from .project import (
     ProjectCreate,
@@ -18,6 +26,10 @@ from .project import (
     ProjectListResponse,
 )
 
+# ---------------------------------------------------------
+# Experiment Schemas
+# ---------------------------------------------------------
+
 from .experiment import (
     ExperimentCreate,
     ExperimentUpdate,
@@ -25,6 +37,10 @@ from .experiment import (
     ExperimentSummary,
     ExperimentListResponse,
 )
+
+# ---------------------------------------------------------
+# Molecule Schemas
+# ---------------------------------------------------------
 
 from .molecule import (
     MoleculeCreate,
@@ -34,6 +50,10 @@ from .molecule import (
     MoleculeListResponse,
 )
 
+# ---------------------------------------------------------
+# Ranking Schemas
+# ---------------------------------------------------------
+
 from .ranking import (
     RankingCreate,
     RankingUpdate,
@@ -42,31 +62,61 @@ from .ranking import (
     RankingListResponse,
 )
 
+# ---------------------------------------------------------
+# Authentication Schemas
+# ---------------------------------------------------------
+
+from .auth import (
+    UserRegisterRequest,
+    UserLoginRequest,
+    UserResponse,
+    TokenResponse,
+    CurrentUser,
+    AuthResponse,
+)
+
+# ---------------------------------------------------------
+# Public Exports
+# ---------------------------------------------------------
+
 __all__ = [
+    # Base
     "NovaQureSchema",
     "TimestampSchema",
 
+    # Projects
     "ProjectCreate",
     "ProjectUpdate",
     "ProjectResponse",
     "ProjectSummary",
     "ProjectListResponse",
 
+    # Experiments
     "ExperimentCreate",
     "ExperimentUpdate",
     "ExperimentResponse",
     "ExperimentSummary",
     "ExperimentListResponse",
 
+    # Molecules
     "MoleculeCreate",
     "MoleculeUpdate",
     "MoleculeResponse",
     "MoleculeSummary",
     "MoleculeListResponse",
 
+    # Rankings
     "RankingCreate",
     "RankingUpdate",
     "RankingResponse",
     "RankingSummary",
     "RankingListResponse",
+
+    # Authentication
+    "UserRegisterRequest",
+    "UserLoginRequest",
+    "UserResponse",
+    "TokenResponse",
+    "CurrentUser",
+    "AuthResponse",
 ]
