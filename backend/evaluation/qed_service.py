@@ -4,7 +4,7 @@ NovaQure Evaluation Module
 QED Service
 
 Computes the Quantitative Estimate of Drug-likeness (QED)
-for a generated molecule using RDKit.
+for generated molecules using RDKit.
 
 Author:
     NovaQure Evaluation Team
@@ -16,6 +16,7 @@ import logging
 
 from rdkit import Chem
 from rdkit.Chem import QED
+from rdkit.Chem.rdchem import Mol
 
 from backend.contracts.molecule import Molecule
 
@@ -24,76 +25,84 @@ logger = logging.getLogger(__name__)
 
 class QEDService:
     """
-    Computes RDKit QED scores.
+    Service responsible for computing RDKit QED scores.
 
     Responsibilities
     ----------------
-    - Validate SMILES
-    - Parse RDKit molecule
-    - Compute QED
-    - Return explainable score
+    - Validate molecular SMILES
+    - Construct RDKit molecule
+    - Compute QED score
+    - Return explainable drug-likeness metric
 
-    This service is stateless.
+    This service is stateless and thread-safe.
     """
 
-    def calculate_qed(self, molecule: Molecule) -> float:
+    @staticmethod
+    def _build_rdkit_molecule(smiles: str) -> Mol:
         """
-        Calculate the RDKit QED score.
+        Convert a SMILES string into an RDKit molecule.
 
         Parameters
         ----------
-        molecule:
+        smiles : str
+            Canonical SMILES representation.
+
+        Returns
+        -------
+        Mol
+            Parsed RDKit molecule.
+
+        Raises
+        ------
+        ValueError
+            If the supplied SMILES is invalid.
+        """
+
+        rdkit_molecule = Chem.MolFromSmiles(smiles)
+
+        if rdkit_molecule is None:
+            raise ValueError(f"Invalid SMILES: {smiles}")
+
+        return rdkit_molecule
+
+    def calculate_qed(self, molecule: Molecule) -> float:
+        """
+        Compute the Quantitative Estimate of Drug-likeness (QED).
+
+        Parameters
+        ----------
+        molecule : Molecule
             Molecule contract.
 
         Returns
         -------
         float
-            QED score between 0 and 1.
-
-        Raises
-        ------
-        ValueError
-            Invalid SMILES.
-        RuntimeError
-            RDKit computation failure.
+            QED score in the range [0, 1].
         """
 
         logger.info(
-            "Starting QED evaluation for molecule_id=%s",
+            "Starting QED evaluation | molecule_id=%s",
             molecule.molecule_id,
         )
 
-        rdkit_molecule = Chem.MolFromSmiles(molecule.smiles)
-
-        if rdkit_molecule is None:
-            logger.error(
-                "Invalid SMILES for molecule_id=%s",
-                molecule.molecule_id,
-            )
-
-            raise ValueError(
-                f"Invalid SMILES: {molecule.smiles}"
-            )
+        rdkit_molecule = self._build_rdkit_molecule(
+            molecule.smiles
+        )
 
         try:
+            qed_score = float(QED.qed(rdkit_molecule))
 
-            score = float(QED.qed(rdkit_molecule))
-
-        except Exception as exc:
-
+        except Exception:
             logger.exception(
-                "RDKit QED calculation failed for molecule_id=%s",
+                "RDKit QED calculation failed | molecule_id=%s",
                 molecule.molecule_id,
             )
-
-            raise RuntimeError(
-                "QED calculation failed."
-            ) from exc
+            raise
 
         logger.info(
-            "Finished QED evaluation for molecule_id=%s score=%.4f",
+            "Completed QED evaluation | molecule_id=%s | qed=%.4f",
             molecule.molecule_id,
-            score,
+            qed_score,
         )
 
-        return score
+        return qed_score
