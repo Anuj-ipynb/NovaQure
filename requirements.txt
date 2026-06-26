@@ -24,6 +24,7 @@ moses
 
 pennylane
 qiskit
+chemprop
 
 sqlalchemy
 
