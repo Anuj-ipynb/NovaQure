@@ -1,39 +1,61 @@
-const experiments = [
-  {
-    id: "EXP-1042",
-    protein: "EGFR",
-    status: "Running",
-    progress: 73,
-    molecules: 421,
-    node: "Quantum-01",
-  },
-  {
-    id: "EXP-1043",
-    protein: "HER2",
-    status: "Running",
-    progress: 51,
-    molecules: 312,
-    node: "Quantum-02",
-  },
-  {
-    id: "EXP-1044",
-    protein: "KRAS",
-    status: "Queued",
-    progress: 0,
-    molecules: 0,
-    node: "Waiting",
-  },
-  {
-    id: "EXP-1045",
-    protein: "BRAF",
-    status: "Completed",
-    progress: 100,
-    molecules: 923,
-    node: "Quantum-01",
-  },
-];
+import { useExperiments } from "../../hooks/experiments/useExperiments";
 
 export default function ExperimentsPage() {
+  const {
+    data: experiments,
+    isLoading,
+    error,
+  } = useExperiments();
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          minHeight: "70vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: 24,
+          color: "#94A3B8",
+        }}
+      >
+        Loading experiments...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          minHeight: "70vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: 24,
+          color: "#EF4444",
+        }}
+      >
+        Failed to connect to experiment service.
+      </div>
+    );
+  }
+
+  const running =
+    experiments?.filter(
+      (e) => e.status === "running"
+    ).length || 0;
+
+  const queued =
+    experiments?.filter(
+      (e) => e.status === "queued"
+    ).length || 0;
+
+  const completed =
+    experiments?.filter(
+      (e) => e.status === "completed"
+    ).length || 0;
+
   return (
     <div>
       {/* Header */}
@@ -41,8 +63,7 @@ export default function ExperimentsPage() {
       <div
         style={{
           display: "flex",
-          justifyContent:
-            "space-between",
+          justifyContent: "space-between",
           alignItems: "center",
           marginBottom: 40,
         }}
@@ -83,7 +104,7 @@ export default function ExperimentsPage() {
         </button>
       </div>
 
-      {/* Top Cards */}
+      {/* Stats */}
 
       <div
         style={{
@@ -95,40 +116,57 @@ export default function ExperimentsPage() {
         }}
       >
         {[
-          ["Running", "18"],
-          ["Queued", "7"],
-          ["Completed", "124"],
-          ["Success Rate", "94.2%"],
-        ].map(([title, value]) => (
-          <div
-            key={title}
-            style={{
-              background:
-                "rgba(255,255,255,0.05)",
-              borderRadius: 24,
-              padding: 28,
-              border:
-                "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <p
+          [
+            "Running",
+            running.toString(),
+          ],
+          [
+            "Queued",
+            queued.toString(),
+          ],
+          [
+            "Completed",
+            completed.toString(),
+          ],
+          [
+            "Total",
+            (
+              experiments?.length || 0
+            ).toString(),
+          ],
+        ].map(
+          ([title, value]) => (
+            <div
+              key={title}
               style={{
-                color: "#94A3B8",
+                background:
+                  "rgba(255,255,255,0.05)",
+                borderRadius: 24,
+                padding: 28,
+                border:
+                  "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              {title}
-            </p>
+              <p
+                style={{
+                  color:
+                    "#94A3B8",
+                }}
+              >
+                {title}
+              </p>
 
-            <h1
-              style={{
-                fontSize: 36,
-                marginTop: 15,
-              }}
-            >
-              {value}
-            </h1>
-          </div>
-        ))}
+              <h1
+                style={{
+                  fontSize: 36,
+                  marginTop: 15,
+                }}
+              >
+                {value}
+              </h1>
+            </div>
+          )
+        )}
       </div>
 
       {/* Main Grid */}
@@ -141,7 +179,7 @@ export default function ExperimentsPage() {
           gap: 24,
         }}
       >
-        {/* Table */}
+        {/* Experiment Table */}
 
         <div
           style={{
@@ -161,105 +199,104 @@ export default function ExperimentsPage() {
             Active Experiments
           </h2>
 
-          <table
-            style={{
-              width: "100%",
-            }}
-          >
-            <thead>
-              <tr>
-                <th align="left">
-                  Experiment
-                </th>
-                <th align="left">
-                  Protein
-                </th>
-                <th align="left">
-                  Status
-                </th>
-                <th align="left">
-                  Progress
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {experiments.map((exp) => (
-                <tr
-                  key={exp.id}
-                  style={{
-                    height: 90,
-                  }}
-                >
-                  <td>{exp.id}</td>
-
-                  <td>
-                    {exp.protein}
-                  </td>
-
-                  <td>
-                    <div
-                      style={{
-                        display:
-                          "inline-block",
-                        padding:
-                          "8px 14px",
-                        borderRadius:
-                          999,
-                        background:
-                          exp.status ===
-                          "Running"
-                            ? "rgba(16,185,129,0.2)"
-                            : exp.status ===
-                              "Completed"
-                            ? "rgba(99,102,241,0.2)"
-                            : "rgba(251,191,36,0.2)",
-                      }}
-                    >
-                      {exp.status}
-                    </div>
-                  </td>
-
-                  <td>
-                    <div
-                      style={{
-                        width: 180,
-                        height: 12,
-                        background:
-                          "#1E293B",
-                        borderRadius:
-                          999,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width:
-                            `${exp.progress}%`,
-                          height:
-                            "100%",
-                          borderRadius:
-                            999,
-                          background:
-                            "linear-gradient(90deg,#06B6D4,#7C3AED)",
-                        }}
-                      />
-                    </div>
-
-                    <p
-                      style={{
-                        marginTop: 8,
-                      }}
-                    >
-                      {exp.progress}%
-                    </p>
-                  </td>
+          {experiments?.length ===
+          0 ? (
+            <div
+              style={{
+                textAlign:
+                  "center",
+                padding: 50,
+                color:
+                  "#94A3B8",
+              }}
+            >
+              No experiments found.
+            </div>
+          ) : (
+            <table
+              style={{
+                width: "100%",
+              }}
+            >
+              <thead>
+                <tr>
+                  <th align="left">
+                    ID
+                  </th>
+                  <th align="left">
+                    Protein
+                  </th>
+                  <th align="left">
+                    Iterations
+                  </th>
+                  <th align="left">
+                    Status
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {experiments?.map(
+                  (exp) => (
+                    <tr
+                      key={
+                        exp.id
+                      }
+                      style={{
+                        height: 90,
+                      }}
+                    >
+                      <td>
+                        {
+                          exp.id
+                        }
+                      </td>
+
+                      <td>
+                        {
+                          exp.target_protein
+                        }
+                      </td>
+
+                      <td>
+                        {
+                          exp.iterations
+                        }
+                      </td>
+
+                      <td>
+                        <div
+                          style={{
+                            display:
+                              "inline-block",
+                            padding:
+                              "8px 14px",
+                            borderRadius:
+                              999,
+                            background:
+                              exp.status ===
+                              "running"
+                                ? "rgba(16,185,129,0.2)"
+                                : exp.status ===
+                                  "completed"
+                                ? "rgba(99,102,241,0.2)"
+                                : "rgba(251,191,36,0.2)",
+                          }}
+                        >
+                          {
+                            exp.status
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
-        {/* System Panel */}
+        {/* Right Panel */}
 
         <div
           style={{
@@ -269,115 +306,73 @@ export default function ExperimentsPage() {
             gap: 24,
           }}
         >
-          {/* GPU */}
+          <MetricCard
+            title="GPU Cluster"
+            value="71%"
+            subtitle="Utilization"
+            color="#06B6D4"
+          />
 
-          <div
-            style={{
-              background:
-                "rgba(255,255,255,0.05)",
-              borderRadius: 28,
-              padding: 28,
-              border:
-                "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <h2>GPU Cluster</h2>
+          <MetricCard
+            title="Quantum Nodes"
+            value="2 / 4"
+            subtitle="Nodes Active"
+            color="#8B5CF6"
+          />
 
-            <h1
-              style={{
-                fontSize: 48,
-                marginTop: 20,
-                color: "#06B6D4",
-              }}
-            >
-              71%
-            </h1>
-
-            <p
-              style={{
-                color: "#94A3B8",
-              }}
-            >
-              Utilization
-            </p>
-          </div>
-
-          {/* Quantum */}
-
-          <div
-            style={{
-              background:
-                "rgba(255,255,255,0.05)",
-              borderRadius: 28,
-              padding: 28,
-              border:
-                "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <h2>Quantum Nodes</h2>
-
-            <h1
-              style={{
-                fontSize: 48,
-                marginTop: 20,
-                color: "#8B5CF6",
-              }}
-            >
-              2 / 4
-            </h1>
-
-            <p
-              style={{
-                color: "#94A3B8",
-              }}
-            >
-              Nodes Active
-            </p>
-          </div>
-
-          {/* AI Agents */}
-
-          <div
-            style={{
-              background:
-                "rgba(255,255,255,0.05)",
-              borderRadius: 28,
-              padding: 28,
-              border:
-                "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <h2>AI Agents</h2>
-
-            <p
-              style={{
-                marginTop: 20,
-                color: "#10B981",
-              }}
-            >
-              ● Generator Agent Online
-            </p>
-
-            <p
-              style={{
-                marginTop: 10,
-                color: "#10B981",
-              }}
-            >
-              ● Ranking Agent Online
-            </p>
-
-            <p
-              style={{
-                marginTop: 10,
-                color: "#10B981",
-              }}
-            >
-              ● Reliability Agent Online
-            </p>
-          </div>
+          <MetricCard
+            title="AI Agents"
+            value="3"
+            subtitle="Agents Online"
+            color="#10B981"
+          />
         </div>
       </div>
+    </div>
+  );
+}
+
+function MetricCard({
+  title,
+  value,
+  subtitle,
+  color,
+}: {
+  title: string;
+  value: string;
+  subtitle: string;
+  color: string;
+}) {
+  return (
+    <div
+      style={{
+        background:
+          "rgba(255,255,255,0.05)",
+        borderRadius: 28,
+        padding: 28,
+        border:
+          "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <h2>{title}</h2>
+
+      <h1
+        style={{
+          fontSize: 48,
+          marginTop: 20,
+          color,
+        }}
+      >
+        {value}
+      </h1>
+
+      <p
+        style={{
+          color: "#94A3B8",
+        }}
+      >
+        {subtitle}
+      </p>
     </div>
   );
 }

@@ -1,46 +1,75 @@
-const rankings = [
-  {
-    rank: 1,
-    molecule: "NQ-MOL-001",
-    score: 98.7,
-    confidence: 96.2,
-    reliability: 95.7,
-    affinity: -12.1,
-    recommendation: "Advance to preclinical screening",
-    color: "#FFD700",
-  },
-  {
-    rank: 2,
-    molecule: "NQ-MOL-002",
-    score: 96.8,
-    confidence: 94.1,
-    reliability: 94.0,
-    affinity: -11.7,
-    recommendation: "Further optimization suggested",
-    color: "#C0C0C0",
-  },
-  {
-    rank: 3,
-    molecule: "NQ-MOL-003",
-    score: 94.5,
-    confidence: 92.8,
-    reliability: 91.6,
-    affinity: -11.2,
-    recommendation: "Retain in candidate pool",
-    color: "#CD7F32",
-  },
-  {
-    rank: 4,
-    molecule: "NQ-MOL-004",
-    score: 92.4,
-    confidence: 90.3,
-    reliability: 89.8,
-    affinity: -10.8,
-    recommendation: "Monitor",
-    color: "#6366F1",
-  },
+import { useRankings } from "../../hooks/rankings/useRankings";
+
+const medalColors = [
+  "#FFD700",
+  "#C0C0C0",
+  "#CD7F32",
+  "#6366F1",
 ];
+
 export default function RankingsPage() {
+  const {
+    data: rankings,
+    isLoading,
+    error,
+  } = useRankings();
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          minHeight: "70vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#94A3B8",
+          fontSize: 24,
+        }}
+      >
+        Loading rankings...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          minHeight: "70vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#EF4444",
+          fontSize: 24,
+        }}
+      >
+        Failed to connect to ranking service.
+      </div>
+    );
+  }
+
+  const topScore =
+    rankings?.length
+      ? Math.max(
+          ...rankings.map(
+            (r) => r.score,
+          ),
+        ).toFixed(1)
+      : "0";
+
+  const avgConfidence =
+    rankings?.length
+      ? (
+          rankings.reduce(
+            (sum, item) =>
+              sum +
+              item.confidence *
+                100,
+            0,
+          ) / rankings.length
+        ).toFixed(1)
+      : "0";
+
   return (
     <div>
       {/* Header */}
@@ -48,7 +77,8 @@ export default function RankingsPage() {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent:
+            "space-between",
           alignItems: "center",
           marginBottom: 40,
         }}
@@ -75,7 +105,8 @@ export default function RankingsPage() {
 
         <button
           style={{
-            padding: "16px 28px",
+            padding:
+              "16px 28px",
             borderRadius: 18,
             border: "none",
             background:
@@ -94,159 +125,239 @@ export default function RankingsPage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4,1fr)",
+          gridTemplateColumns:
+            "repeat(4,1fr)",
           gap: 24,
           marginBottom: 40,
         }}
       >
         {[
-          ["Candidates Ranked", "14,287"],
-          ["Top Score", "98.7"],
-          ["Avg Confidence", "94.2%"],
-          ["Promotion Rate", "2.3%"],
-        ].map(([title, value]) => (
-          <div
-            key={title}
-            style={{
-              background:
-                "rgba(255,255,255,0.05)",
-              borderRadius: 24,
-              padding: 28,
-              border:
-                "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <p style={{ color: "#94A3B8" }}>
-              {title}
-            </p>
-
-            <h1
+          [
+            "Candidates Ranked",
+            (
+              rankings?.length ||
+              0
+            ).toString(),
+          ],
+          [
+            "Top Score",
+            topScore,
+          ],
+          [
+            "Avg Confidence",
+            `${avgConfidence}%`,
+          ],
+          [
+            "Promotion Rate",
+            "2.3%",
+          ],
+        ].map(
+          ([title, value]) => (
+            <div
+              key={title}
               style={{
-                marginTop: 15,
-                fontSize: 38,
+                background:
+                  "rgba(255,255,255,0.05)",
+                borderRadius: 24,
+                padding: 28,
+                border:
+                  "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              {value}
-            </h1>
-          </div>
-        ))}
+              <p
+                style={{
+                  color:
+                    "#94A3B8",
+                }}
+              >
+                {title}
+              </p>
+
+              <h1
+                style={{
+                  marginTop: 15,
+                  fontSize: 38,
+                }}
+              >
+                {value}
+              </h1>
+            </div>
+          ),
+        )}
       </div>
 
       {/* Leaderboard */}
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 24,
-        }}
-      >
-        {rankings.map((mol) => (
-          <div
-            key={mol.molecule}
-            style={{
-              background:
-                "rgba(255,255,255,0.05)",
-              borderRadius: 28,
-              padding: 30,
-              border:
-                `2px solid ${mol.color}`,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent:
-                  "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <h1
-                  style={{
-                    color: mol.color,
-                    fontSize: 40,
-                  }}
-                >
-                  #{mol.rank}
-                </h1>
-
-                <h2>
-                  {mol.molecule}
-                </h2>
-
-                <p
-                  style={{
-                    color: "#94A3B8",
-                    marginTop: 10,
-                  }}
-                >
-                  {mol.recommendation}
-                </p>
-              </div>
-
+      {rankings?.length ===
+      0 ? (
+        <div
+          style={{
+            textAlign:
+              "center",
+            padding: 80,
+            color:
+              "#94A3B8",
+          }}
+        >
+          No rankings available.
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection:
+              "column",
+            gap: 24,
+          }}
+        >
+          {rankings?.map(
+            (
+              ranking,
+              index,
+            ) => (
               <div
+                key={
+                  ranking.id
+                }
                 style={{
-                  textAlign: "right",
+                  background:
+                    "rgba(255,255,255,0.05)",
+                  borderRadius:
+                    28,
+                  padding: 30,
+                  border: `2px solid ${
+                    medalColors[
+                      index %
+                        medalColors.length
+                    ]
+                  }`,
                 }}
               >
-                <h1
+                <div
                   style={{
-                    fontSize: 48,
-                    color: mol.color,
+                    display:
+                      "flex",
+                    justifyContent:
+                      "space-between",
+                    alignItems:
+                      "center",
                   }}
                 >
-                  {mol.score}
-                </h1>
+                  <div>
+                    <h1
+                      style={{
+                        color:
+                          medalColors[
+                            index %
+                              medalColors.length
+                          ],
+                        fontSize: 40,
+                      }}
+                    >
+                      #
+                      {
+                        ranking.rank
+                      }
+                    </h1>
 
-                <p>Composite Score</p>
+                    <h2>
+                      {
+                        ranking.molecule_id
+                      }
+                    </h2>
+
+                    <p
+                      style={{
+                        color:
+                          "#94A3B8",
+                        marginTop: 10,
+                      }}
+                    >
+                      AI ranked
+                      candidate
+                      molecule
+                    </p>
+                  </div>
+
+                  <div
+                    style={{
+                      textAlign:
+                        "right",
+                    }}
+                  >
+                    <h1
+                      style={{
+                        fontSize: 48,
+                        color:
+                          medalColors[
+                            index %
+                              medalColors.length
+                          ],
+                      }}
+                    >
+                      {
+                        ranking.score
+                      }
+                    </h1>
+
+                    <p>
+                      Composite
+                      Score
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display:
+                      "grid",
+                    gridTemplateColumns:
+                      "repeat(4,1fr)",
+                    gap: 18,
+                    marginTop: 30,
+                  }}
+                >
+                  <Metric
+                    title="Confidence"
+                    value={`${(
+                      ranking.confidence *
+                      100
+                    ).toFixed(
+                      1,
+                    )}%`}
+                  />
+
+                  <Metric
+                    title="Reliability"
+                    value="Pending"
+                  />
+
+                  <Metric
+                    title="Binding Affinity"
+                    value="N/A"
+                  />
+
+                  <Metric
+                    title="AI Score"
+                    value={`${ranking.score}`}
+                  />
+                </div>
               </div>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(4,1fr)",
-                gap: 18,
-                marginTop: 30,
-              }}
-            >
-              <Metric
-                title="Confidence"
-                value={`${mol.confidence}%`}
-              />
-
-              <Metric
-                title="Reliability"
-                value={`${mol.reliability}%`}
-              />
-
-              <Metric
-                title="Binding Affinity"
-                value={`${mol.affinity}`}
-              />
-
-              <Metric
-                title="AI Score"
-                value={`${mol.score}`}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
+            ),
+          )}
+        </div>
+      )}
     </div>
   );
 }
-function Metric(
-  {
-    title,
-    value,
-  }: {
-    title: string;
-    value: string;
-  },
-) {
+
+function Metric({
+  title,
+  value,
+}: {
+  title: string;
+  value: string;
+}) {
   return (
     <div
       style={{

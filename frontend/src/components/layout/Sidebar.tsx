@@ -5,9 +5,13 @@ import {
   FaAtom,
   FaDatabase,
   FaShieldAlt,
+  FaSignOutAlt,
+  FaUserCircle,
 } from "react-icons/fa";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+
+import { useAuth } from "../../hooks/auth/useAuth";
 
 const navigationItems = [
   {
@@ -43,6 +47,27 @@ const navigationItems = [
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+
+  const {
+    user,
+    logout,
+  } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+
+    navigate("/login");
+  };
+
+  const initials =
+    user?.full_name
+      ?.split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "NQ";
+
   return (
     <aside
       style={{
@@ -53,8 +78,12 @@ export default function Sidebar() {
         padding: 30,
         borderRight:
           "1px solid rgba(255,255,255,0.05)",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
+      {/* Logo */}
+
       <div
         style={{
           marginBottom: 50,
@@ -79,6 +108,8 @@ export default function Sidebar() {
           AI + Quantum Discovery
         </p>
       </div>
+
+      {/* Navigation */}
 
       <div
         style={{
@@ -119,15 +150,21 @@ export default function Sidebar() {
         ))}
       </div>
 
+      {/* Spacer */}
+
+      <div style={{ flex: 1 }} />
+
+      {/* System Status */}
+
       <div
         style={{
-          marginTop: 50,
           padding: 20,
           borderRadius: 20,
           background:
             "rgba(255,255,255,0.04)",
           border:
             "1px solid rgba(255,255,255,0.05)",
+          marginBottom: 20,
         }}
       >
         <h3
@@ -163,6 +200,86 @@ export default function Sidebar() {
         >
           Quantum Engine standby
         </p>
+      </div>
+
+      {/* User Profile */}
+
+      <div
+        style={{
+          padding: 20,
+          borderRadius: 20,
+          background:
+            "rgba(255,255,255,0.04)",
+          border:
+            "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              background:
+                "linear-gradient(135deg,#7C3AED,#06B6D4)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontWeight: 700,
+              fontSize: 18,
+            }}
+          >
+            {initials}
+          </div>
+
+          <div>
+            <div
+              style={{
+                fontWeight: 600,
+              }}
+            >
+              {user?.full_name || "Research User"}
+            </div>
+
+            <div
+              style={{
+                color: "#94A3B8",
+                fontSize: 14,
+              }}
+            >
+              {user?.role || "Researcher"}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: 14,
+            border: "none",
+            background:
+              "rgba(239,68,68,0.15)",
+            color: "#EF4444",
+            fontWeight: 600,
+            cursor: "pointer",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <FaSignOutAlt />
+          Logout
+        </button>
       </div>
     </aside>
   );
