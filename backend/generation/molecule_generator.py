@@ -1,118 +1,47 @@
-import hashlib
-import random
-import uuid
+from __future__ import annotations
 
-import numpy as np
-import selfies as sf
+import uuid
 
 from backend.contracts.molecule import Molecule
 
-from backend.generation.generation_config import (
-    GenerationConfig
+from backend.generation.encoder_service import (
+    EncoderService,
 )
 
-from backend.generation.encoder_service import (
-    EncoderService
+from backend.generation.generation_config import (
+    GenerationConfig,
+)
+
+from backend.generation.mutation_engine import (
+    MutationEngine,
 )
 
 from backend.generation.selfies_converter import (
     smiles_to_selfies,
-    selfies_to_smiles
+    selfies_to_smiles,
 )
 
 from backend.generation.smiles_validator import (
-    validate_smiles
+    validate_smiles,
 )
 
 from backend.sampling.sampling_service import (
-    SamplingService
+    SamplingService,
 )
-
-
-SELFIES_TOKENS = [
-    "[C]",
-    "[O]",
-    "[N]",
-    "[F]",
-    "[=C]",
-    "[Branch1]",
-]
 
 
 _sampler = SamplingService()
 
 _encoder = EncoderService()
 
-
-def generate_embedding(
-    selfies_string: str
-) -> list[float]:
-
-    vector = np.zeros(
-        GenerationConfig.LATENT_DIM,
-        dtype=np.float32
-    )
-
-    for token in sf.split_selfies(
-        selfies_string
-    ):
-
-        seed = int.from_bytes(
-            hashlib.sha256(
-                token.encode()
-            ).digest()[:8],
-            "big"
-        )
-
-        rng = np.random.default_rng(
-            seed
-        )
-
-        vector += rng.normal(
-            0,
-            1,
-            GenerationConfig.LATENT_DIM
-        )
-
-    norm = np.linalg.norm(
-        vector
-    )
-
-    if norm > 0:
-        vector /= norm
-
-    return vector.astype(float).tolist()
-
-
-def mutate_selfies(
-    selfies_string: str
-) -> str:
-
-    tokens = list(
-    sf.split_selfies(
-        selfies_string
-    )
-)
-
-    if not tokens:
-        return selfies_string
-
-    index = random.randrange(
-        len(tokens)
-    )
-
-    tokens[index] = random.choice(
-        SELFIES_TOKENS
-    )
-
-    return "".join(tokens)
+_mutation_engine = MutationEngine()
 
 
 def build_molecule(
     smiles: str,
     source: str,
     latent: list[float],
-    iteration: int
+    iteration: int,
 ) -> Molecule:
 
     return Molecule(
@@ -131,12 +60,12 @@ def build_molecule(
 
 
 def generate_molecules(
-    smiles_list: list[str]
+    smiles_list: list[str],
 ) -> list[Molecule]:
 
-    molecules = []
+    molecules: list[Molecule] = []
 
-    seen = set()
+    seen: set[str] = set()
 
     for smiles in smiles_list:
 
@@ -164,24 +93,26 @@ def generate_molecules(
 
         molecules.append(
             build_molecule(
-                smiles,
-                "dataset",
-                sampled,
-                0
+                smiles=smiles,
+                source="dataset",
+                latent=sampled,
+                iteration=0,
             )
         )
 
-        seen.add(smiles)
+        seen.add(
+            smiles
+        )
 
         for iteration in range(
             1,
-            GenerationConfig.MUTATIONS_PER_MOLECULE + 1
+            GenerationConfig.MUTATIONS_PER_MOLECULE + 1,
         ):
 
             try:
 
                 mutated_selfies = (
-                    mutate_selfies(
+                    _mutation_engine.mutate(
                         selfies_string
                     )
                 )
@@ -202,18 +133,18 @@ def generate_molecules(
 
                 embedding = _encoder.encode(
                     mutated_selfies
-                 )
+                )
 
                 sampled = _sampler.sample(
                     embedding
-                    )
+                )
 
                 molecules.append(
                     build_molecule(
-                        mutated_smiles,
-                        "mutation",
-                        sampled,
-                        iteration
+                        smiles=mutated_smiles,
+                        source="mutation",
+                        latent=sampled,
+                        iteration=iteration,
                     )
                 )
 
