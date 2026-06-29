@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-def find_root():
+def find_root() -> Path:
 
     current = Path.cwd().resolve()
 
@@ -23,239 +23,134 @@ def find_root():
 
 ROOT = find_root()
 
-
-VALIDATOR = (
+TARGET = (
     ROOT
     / "backend"
     / "generation"
-    / "generation_validator.py"
-)
-
-PIPELINE_TEST = (
-    ROOT
-    / "backend"
-    / "tests"
-    / "test_generation_pipeline.py"
-)
-
-REPORT_TEST = (
-    ROOT
-    / "backend"
-    / "tests"
-    / "test_generation_report.py"
+    / "generation_helpers.py"
 )
 
 
-VALIDATOR_CODE = r'''
-from backend.contracts.molecule import (
-    Molecule
+HELPER_CODE = r'''
+from __future__ import annotations
+
+import uuid
+
+from backend.contracts.molecule import Molecule
+
+from backend.generation.encoder_service import (
+    EncoderService,
+)
+
+from backend.generation.selfies_converter import (
+    smiles_to_selfies,
+)
+
+from backend.generation.smiles_validator import (
+    validate_smiles,
+)
+
+from backend.sampling.sampling_service import (
+    SamplingService,
 )
 
 
-class GenerationValidator:
+_encoder = EncoderService()
 
-    REQUIRED_VECTOR_LENGTH = 128
+_sampler = SamplingService()
 
-    @classmethod
-    def validate(
-        cls,
-        molecules: list[Molecule]
-    ) -> None:
 
-        if not molecules:
+def create_latent(
+    selfies_string: str,
+) -> list[float]:
 
-            raise ValueError(
-                "No molecules generated."
-            )
+    embedding = _encoder.encode(
+        selfies_string
+    )
 
-        ids = set()
+    return _sampler.sample(
+        embedding
+    )
 
-        for molecule in molecules:
 
-            if molecule.molecule_id in ids:
+def build_molecule(
+    smiles: str,
+    source: str,
+    latent_vector: list[float],
+    iteration: int,
+) -> Molecule:
 
-                raise ValueError(
-                    "Duplicate molecule_id."
-                )
+    return Molecule(
+        molecule_id=str(
+            uuid.uuid4()
+        ),
+        smiles=smiles,
+        selfies=smiles_to_selfies(
+            smiles
+        ),
+        source=source,
+        validity_score=1.0,
+        latent_vector=latent_vector,
+        generation_iteration=iteration,
+    )
 
-            ids.add(
-                molecule.molecule_id
-            )
 
-            if not molecule.smiles:
+def validate_candidate(
+    smiles: str,
+    seen: set[str],
+) -> bool:
 
-                raise ValueError(
-                    "Missing SMILES."
-                )
+    if not smiles:
+        return False
 
-            if not molecule.selfies:
+    if not validate_smiles(
+        smiles
+    ):
+        return False
 
-                raise ValueError(
-                    "Missing SELFIES."
-                )
+    if smiles in seen:
+        return False
 
-            if molecule.latent_vector is None:
+    return True
 
-                raise ValueError(
-                    "Missing latent vector."
-                )
 
-            if len(
-                molecule.latent_vector
-            ) != cls.REQUIRED_VECTOR_LENGTH:
+def register_candidate(
+    smiles: str,
+    seen: set[str],
+) -> None:
 
-                raise ValueError(
-                    "Invalid latent dimension."
-                )
-
-            if molecule.source not in (
-
-                "dataset",
-
-                "mutation"
-
-            ):
-
-                raise ValueError(
-                    "Invalid source."
-                )
+    seen.add(
+        smiles
+    )
 '''
 
 
-PIPELINE_TEST_CODE = r'''
-from backend.generation.generation_service import (
-    GenerationService
-)
+def write_file():
 
-from backend.generation.generation_validator import (
-    GenerationValidator
-)
-
-
-def test_generation_pipeline():
-
-    molecules = (
-        GenerationService()
-        .run()
-    )
-
-    GenerationValidator.validate(
-        molecules
-    )
-
-    assert len(
-        molecules
-    ) > 0
-'''
-
-
-REPORT_TEST_CODE = r'''
-import json
-
-from pathlib import Path
-
-from backend.generation.generation_config import (
-    GenerationConfig
-)
-
-
-def test_generation_report_exists():
-
-    report = (
-
-        GenerationConfig.OUTPUT_DIR
-
-        /
-
-        "generation_report.json"
-
-    )
-
-    assert report.exists()
-
-
-def test_generation_report_keys():
-
-    report = (
-
-        GenerationConfig.OUTPUT_DIR
-
-        /
-
-        "generation_report.json"
-
-    )
-
-    data = json.loads(
-
-        report.read_text()
-
-    )
-
-    required = [
-
-        "total_molecules",
-
-        "unique_smiles",
-
-        "duplicate_molecules",
-
-        "dataset_molecules",
-
-        "mutation_molecules",
-
-        "average_validity",
-
-        "average_diversity"
-
-    ]
-
-    for key in required:
-
-        assert key in data
-'''
-
-
-def write(path, content):
-
-    path.parent.mkdir(
+    TARGET.parent.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
-    path.write_text(
-        content.strip() + "\n",
-        encoding="utf-8"
+    TARGET.write_text(
+        HELPER_CODE.strip() + "\n",
+        encoding="utf-8",
     )
 
     print(
-        f"UPDATED {path.relative_to(ROOT)}"
+        f"UPDATED {TARGET.relative_to(ROOT)}"
     )
 
 
 if __name__ == "__main__":
 
-    print(
-        "NovaQure Generation G3.5B"
-    )
+    print("=" * 60)
+    print("NovaQure Generation G4.3B-1")
+    print("=" * 60)
 
-    write(
-        VALIDATOR,
-        VALIDATOR_CODE
-    )
-
-    write(
-        PIPELINE_TEST,
-        PIPELINE_TEST_CODE
-    )
-
-    write(
-        REPORT_TEST,
-        REPORT_TEST_CODE
-    )
+    write_file()
 
     print()
-
     print(
-        "Generation validation & tests installed."
+        "Generation helper layer installed."
     )

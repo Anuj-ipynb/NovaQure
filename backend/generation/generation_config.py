@@ -21,8 +21,14 @@ class GenerationConfig:
     NOVEL_MOLECULE_COUNT = 100
 
     LATENT_DIM = 128
+    RANKING_WEIGHTS = {
+    "novelty": 0.40,
+    "diversity": 0.35,
+    "validity": 0.25,
+}
 
     MUTATIONS_PER_MOLECULE = 3
+    MUTATION_MAX_RETRIES = 3
     MUTATION_STRATEGY = "weighted"
 
     MUTATION_WEIGHTS = {

@@ -109,50 +109,63 @@ def generate_molecules(
             GenerationConfig.MUTATIONS_PER_MOLECULE + 1,
         ):
 
-            try:
+            mutation_created = False
 
-                mutated_selfies = (
-                    _mutation_engine.mutate(
-                        selfies_string
+            for _ in range(
+                GenerationConfig.MUTATION_MAX_RETRIES
+            ):
+
+                try:
+
+                    mutated_selfies = (
+                        _mutation_engine.mutate(
+                            selfies_string
+                        )
                     )
-                )
 
-                mutated_smiles = (
-                    selfies_to_smiles(
+                    mutated_smiles = (
+                        selfies_to_smiles(
+                            mutated_selfies
+                        )
+                    )
+
+                    if not validate_smiles(
+                        mutated_smiles
+                    ):
+                        continue
+
+                    if mutated_smiles in seen:
+                        continue
+
+                    embedding = _encoder.encode(
                         mutated_selfies
                     )
-                )
 
-                if not validate_smiles(
-                    mutated_smiles
-                ):
-                    continue
-
-                if mutated_smiles in seen:
-                    continue
-
-                embedding = _encoder.encode(
-                    mutated_selfies
-                )
-
-                sampled = _sampler.sample(
-                    embedding
-                )
-
-                molecules.append(
-                    build_molecule(
-                        smiles=mutated_smiles,
-                        source="mutation",
-                        latent=sampled,
-                        iteration=iteration,
+                    sampled = _sampler.sample(
+                        embedding
                     )
-                )
 
-                seen.add(
-                    mutated_smiles
-                )
+                    molecules.append(
+                        build_molecule(
+                            smiles=mutated_smiles,
+                            source="mutation",
+                            latent=sampled,
+                            iteration=iteration,
+                        )
+                    )
 
-            except Exception:
+                    seen.add(
+                        mutated_smiles
+                    )
+
+                    mutation_created = True
+
+                    break
+
+                except Exception:
+                    continue
+
+            if not mutation_created:
                 continue
 
     return molecules[
