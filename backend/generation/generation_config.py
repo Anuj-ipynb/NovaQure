@@ -23,3 +23,9 @@ class GenerationConfig:
     LATENT_DIM = 128
 
     MUTATIONS_PER_MOLECULE = 3
+
+    LATENT_NOISE_STD = 0.15
+
+    LATENT_INTERPOLATION_STEPS = 8
+
+    RANDOM_SEED = 42

@@ -7,8 +7,8 @@ import selfies as sf
 
 from backend.contracts.molecule import Molecule
 
-from backend.generation.smiles_validator import (
-    validate_smiles
+from backend.generation.generation_config import (
+    GenerationConfig
 )
 
 from backend.generation.selfies_converter import (
@@ -16,8 +16,12 @@ from backend.generation.selfies_converter import (
     selfies_to_smiles
 )
 
-from backend.generation.generation_config import (
-    GenerationConfig
+from backend.generation.smiles_validator import (
+    validate_smiles
+)
+
+from backend.sampling.sampling_service import (
+    SamplingService
 )
 
 
@@ -31,6 +35,9 @@ SELFIES_TOKENS = [
 ]
 
 
+_sampler = SamplingService()
+
+
 def generate_embedding(
     selfies_string: str
 ) -> list[float]:
@@ -40,20 +47,14 @@ def generate_embedding(
         dtype=np.float32
     )
 
-    tokens = list(
-        sf.split_selfies(
-            selfies_string
-        )
-    )
-
-    for token in tokens:
-
-        digest = hashlib.sha256(
-            token.encode()
-        ).digest()
+    for token in sf.split_selfies(
+        selfies_string
+    ):
 
         seed = int.from_bytes(
-            digest[:8],
+            hashlib.sha256(
+                token.encode()
+            ).digest()[:8],
             "big"
         )
 
@@ -74,11 +75,7 @@ def generate_embedding(
     if norm > 0:
         vector /= norm
 
-    return (
-        vector
-        .astype(float)
-        .tolist()
-    )
+    return vector.astype(float).tolist()
 
 
 def mutate_selfies(
@@ -94,12 +91,11 @@ def mutate_selfies(
     if not tokens:
         return selfies_string
 
-    idx = random.randint(
-        0,
-        len(tokens) - 1
+    index = random.randrange(
+        len(tokens)
     )
 
-    tokens[idx] = random.choice(
+    tokens[index] = random.choice(
         SELFIES_TOKENS
     )
 
@@ -108,26 +104,23 @@ def mutate_selfies(
 
 def build_molecule(
     smiles: str,
-    source: str
+    source: str,
+    latent: list[float],
+    iteration: int
 ) -> Molecule:
-
-    selfies_string = (
-        smiles_to_selfies(
-            smiles
-        )
-    )
 
     return Molecule(
         molecule_id=str(
             uuid.uuid4()
         ),
         smiles=smiles,
-        selfies=selfies_string,
+        selfies=smiles_to_selfies(
+            smiles
+        ),
         source=source,
         validity_score=1.0,
-        latent_vector=generate_embedding(
-            selfies_string
-        ),
+        latent_vector=latent,
+        generation_iteration=iteration,
     )
 
 
@@ -137,7 +130,7 @@ def generate_molecules(
 
     molecules = []
 
-    seen_smiles = set()
+    seen = set()
 
     for smiles in smiles_list:
 
@@ -146,40 +139,50 @@ def generate_molecules(
         ):
             continue
 
-        if smiles in seen_smiles:
+        if smiles in seen:
             continue
+
+        selfies_string = (
+            smiles_to_selfies(
+                smiles
+            )
+        )
+
+        embedding = generate_embedding(
+            selfies_string
+        )
+
+        sampled = _sampler.sample(
+            embedding
+        )
 
         molecules.append(
             build_molecule(
                 smiles,
-                "dataset"
+                "dataset",
+                sampled,
+                0
             )
         )
 
-        seen_smiles.add(
-            smiles
-        )
+        seen.add(smiles)
 
-        try:
+        for iteration in range(
+            1,
+            GenerationConfig.MUTATIONS_PER_MOLECULE + 1
+        ):
 
-            selfies_string = (
-                smiles_to_selfies(
-                    smiles
-                )
-            )
+            try:
 
-            for _ in range(
-                GenerationConfig
-                .MUTATIONS_PER_MOLECULE
-            ):
-
-                mutated = mutate_selfies(
-                    selfies_string
+                mutated_selfies = (
+                    mutate_selfies(
+                        selfies_string
+                    )
                 )
 
                 mutated_smiles = (
                     selfies_to_smiles(
-                        mutated
+                        mutated_selfies
                     )
                 )
 
@@ -188,27 +191,31 @@ def generate_molecules(
                 ):
                     continue
 
-                if (
-                    mutated_smiles
-                    in seen_smiles
-                ):
+                if mutated_smiles in seen:
                     continue
+
+                sampled = _sampler.sample(
+                    generate_embedding(
+                        mutated_selfies
+                    )
+                )
 
                 molecules.append(
                     build_molecule(
                         mutated_smiles,
-                        "mutation"
+                        "mutation",
+                        sampled,
+                        iteration
                     )
                 )
 
-                seen_smiles.add(
+                seen.add(
                     mutated_smiles
                 )
 
-        except Exception:
-            continue
+            except Exception:
+                continue
 
     return molecules[
-        :GenerationConfig
-        .NOVEL_MOLECULE_COUNT
+        :GenerationConfig.NOVEL_MOLECULE_COUNT
     ]
