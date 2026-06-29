@@ -1,32 +1,28 @@
 import json
 
 from backend.generation.dataset_loader import (
-    load_smiles_dataset
+    load_smiles_dataset,
 )
 
 from backend.generation.data_preprocessor import (
     canonicalize_smiles,
-    remove_duplicates
+    remove_duplicates,
 )
 
 from backend.generation.generation_config import (
-    GenerationConfig
+    GenerationConfig,
 )
 
 from backend.generation.molecule_generator import (
-    generate_molecules
+    generate_molecules,
 )
 
 from backend.generation.generation_report import (
-    GenerationReport
-)
-
-from backend.sampling.diversity import (
-    DiversityCalculator
+    GenerationReport,
 )
 
 from backend.sampling.candidate_selector import (
-    CandidateSelector
+    CandidateSelector,
 )
 
 
@@ -65,7 +61,8 @@ class GenerationService:
         selector = CandidateSelector()
 
         molecules = selector.select(
-            molecules
+            molecules,
+            reference_smiles=smiles,
         )
 
         report = GenerationReport.build(
@@ -89,67 +86,41 @@ class GenerationService:
             )
 
         GenerationConfig.OUTPUT_DIR.mkdir(
-
             parents=True,
-
-            exist_ok=True
-
+            exist_ok=True,
         )
 
         with open(
-
             GenerationConfig.OUTPUT_FILE,
-
             "w",
-
-            encoding="utf-8"
-
+            encoding="utf-8",
         ) as f:
 
             json.dump(
-
                 [
-
                     molecule.model_dump()
-
                     for molecule in molecules
-
                 ],
-
                 f,
-
-                indent=2
-
+                indent=2,
             )
 
         report_file = (
-
             GenerationConfig.OUTPUT_DIR
-
             /
-
             "generation_report.json"
-
         )
 
         with open(
-
             report_file,
-
             "w",
-
-            encoding="utf-8"
-
+            encoding="utf-8",
         ) as f:
 
             json.dump(
-
                 report,
-
                 f,
-
-                indent=2
-
+                indent=2,
             )
 
         return molecules

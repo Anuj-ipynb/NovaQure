@@ -11,6 +11,10 @@ from backend.generation.generation_config import (
     GenerationConfig
 )
 
+from backend.generation.encoder_service import (
+    EncoderService
+)
+
 from backend.generation.selfies_converter import (
     smiles_to_selfies,
     selfies_to_smiles
@@ -36,6 +40,8 @@ SELFIES_TOKENS = [
 
 
 _sampler = SamplingService()
+
+_encoder = EncoderService()
 
 
 def generate_embedding(
@@ -83,10 +89,10 @@ def mutate_selfies(
 ) -> str:
 
     tokens = list(
-        sf.split_selfies(
-            selfies_string
-        )
+    sf.split_selfies(
+        selfies_string
     )
+)
 
     if not tokens:
         return selfies_string
@@ -148,7 +154,7 @@ def generate_molecules(
             )
         )
 
-        embedding = generate_embedding(
+        embedding = _encoder.encode(
             selfies_string
         )
 
@@ -194,11 +200,13 @@ def generate_molecules(
                 if mutated_smiles in seen:
                     continue
 
+                embedding = _encoder.encode(
+                    mutated_selfies
+                 )
+
                 sampled = _sampler.sample(
-                    generate_embedding(
-                        mutated_selfies
+                    embedding
                     )
-                )
 
                 molecules.append(
                     build_molecule(
