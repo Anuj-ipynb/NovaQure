@@ -1,5 +1,10 @@
 import { useRankings } from "../../hooks/rankings/useRankings";
 
+import RankingScoreChart from "../../components/charts/RankingScoreChart";
+import RankingConfidenceChart from "../../components/charts/RankingConfidenceChart";
+import PromotionFunnelChart from "../../components/charts/PromotionFunnelChart";
+import RankingPieChart from "../../components/charts/RankingPieChart";
+
 const medalColors = [
   "#FFD700",
   "#C0C0C0",
@@ -120,7 +125,7 @@ export default function RankingsPage() {
         </button>
       </div>
 
-      {/* Top Stats */}
+      {/* KPI Cards */}
 
       <div
         style={{
@@ -186,6 +191,126 @@ export default function RankingsPage() {
         )}
       </div>
 
+      {/* Analytics Row 1 */}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "1fr 1fr",
+          gap: 24,
+          marginBottom: 40,
+        }}
+      >
+        <div
+          style={{
+            background:
+              "rgba(255,255,255,0.05)",
+            borderRadius: 28,
+            padding: 30,
+            border:
+              "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h2
+            style={{
+              marginBottom: 20,
+            }}
+          >
+            Ranking Score Distribution
+          </h2>
+
+          <RankingScoreChart
+            rankings={
+              rankings ?? []
+            }
+          />
+        </div>
+
+        <div
+          style={{
+            background:
+              "rgba(255,255,255,0.05)",
+            borderRadius: 28,
+            padding: 30,
+            border:
+              "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h2
+            style={{
+              marginBottom: 20,
+            }}
+          >
+            Confidence vs Score
+          </h2>
+
+          <RankingConfidenceChart
+            rankings={
+              rankings ?? []
+            }
+          />
+        </div>
+      </div>
+
+      {/* Analytics Row 2 */}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "1fr 1fr",
+          gap: 24,
+          marginBottom: 40,
+        }}
+      >
+        <div
+          style={{
+            background:
+              "rgba(255,255,255,0.05)",
+            borderRadius: 28,
+            padding: 30,
+            border:
+              "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h2
+            style={{
+              marginBottom: 20,
+            }}
+          >
+            Promotion Funnel
+          </h2>
+
+          <PromotionFunnelChart />
+        </div>
+
+        <div
+          style={{
+            background:
+              "rgba(255,255,255,0.05)",
+            borderRadius: 28,
+            padding: 30,
+            border:
+              "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h2
+            style={{
+              marginBottom: 20,
+            }}
+          >
+            Confidence Distribution
+          </h2>
+
+          <RankingPieChart
+            rankings={
+              rankings ?? []
+            }
+          />
+        </div>
+      </div>
+
       {/* Leaderboard */}
 
       {rankings?.length ===
@@ -210,7 +335,7 @@ export default function RankingsPage() {
             gap: 24,
           }}
         >
-          {rankings?.map(
+          {rankings.map(
             (
               ranking,
               index,
@@ -254,10 +379,7 @@ export default function RankingsPage() {
                         fontSize: 40,
                       }}
                     >
-                      #
-                      {
-                        ranking.rank
-                      }
+                      #{ranking.rank}
                     </h1>
 
                     <h2>
@@ -273,9 +395,7 @@ export default function RankingsPage() {
                         marginTop: 10,
                       }}
                     >
-                      AI ranked
-                      candidate
-                      molecule
+                      AI ranked candidate molecule
                     </p>
                   </div>
 
@@ -301,8 +421,7 @@ export default function RankingsPage() {
                     </h1>
 
                     <p>
-                      Composite
-                      Score
+                      Composite Score
                     </p>
                   </div>
                 </div>

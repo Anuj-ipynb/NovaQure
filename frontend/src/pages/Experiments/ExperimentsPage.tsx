@@ -1,5 +1,8 @@
 import { useExperiments } from "../../hooks/experiments/useExperiments";
 
+import ExperimentStatusChart from "../../components/charts/ExperimentStatusChart";
+import ExperimentIterationsChart from "../../components/charts/ExperimentIterationsChart";
+
 export default function ExperimentsPage() {
   const {
     data: experiments,
@@ -56,6 +59,17 @@ export default function ExperimentsPage() {
       (e) => e.status === "completed"
     ).length || 0;
 
+  const avgIterations =
+    experiments?.length
+      ? Math.round(
+          experiments.reduce(
+            (sum, e) =>
+              sum + e.iterations,
+            0,
+          ) / experiments.length,
+        )
+      : 0;
+
   return (
     <div>
       {/* Header */}
@@ -63,7 +77,8 @@ export default function ExperimentsPage() {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent:
+            "space-between",
           alignItems: "center",
           marginBottom: 40,
         }}
@@ -104,7 +119,7 @@ export default function ExperimentsPage() {
         </button>
       </div>
 
-      {/* Stats */}
+      {/* KPI Cards */}
 
       <div
         style={{
@@ -129,10 +144,8 @@ export default function ExperimentsPage() {
             completed.toString(),
           ],
           [
-            "Total",
-            (
-              experiments?.length || 0
-            ).toString(),
+            "Avg Iterations",
+            avgIterations.toString(),
           ],
         ].map(
           ([title, value]) => (
@@ -165,8 +178,70 @@ export default function ExperimentsPage() {
                 {value}
               </h1>
             </div>
-          )
+          ),
         )}
+      </div>
+
+      {/* Analytics */}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "1fr 1fr",
+          gap: 24,
+          marginBottom: 40,
+        }}
+      >
+        <div
+          style={{
+            background:
+              "rgba(255,255,255,0.05)",
+            borderRadius: 28,
+            padding: 30,
+            border:
+              "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h2
+            style={{
+              marginBottom: 20,
+            }}
+          >
+            Experiment Status Distribution
+          </h2>
+
+          <ExperimentStatusChart
+            experiments={
+              experiments ?? []
+            }
+          />
+        </div>
+
+        <div
+          style={{
+            background:
+              "rgba(255,255,255,0.05)",
+            borderRadius: 28,
+            padding: 30,
+            border:
+              "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h2
+            style={{
+              marginBottom: 20,
+            }}
+          >
+            Optimization Iterations
+          </h2>
+
+          <ExperimentIterationsChart
+            experiments={
+              experiments ?? []
+            }
+          />
+        </div>
       </div>
 
       {/* Main Grid */}
@@ -247,9 +322,10 @@ export default function ExperimentsPage() {
                       }}
                     >
                       <td>
-                        {
-                          exp.id
-                        }
+                        {exp.id.slice(
+                          0,
+                          8,
+                        )}
                       </td>
 
                       <td>
@@ -289,7 +365,7 @@ export default function ExperimentsPage() {
                         </div>
                       </td>
                     </tr>
-                  )
+                  ),
                 )}
               </tbody>
             </table>
