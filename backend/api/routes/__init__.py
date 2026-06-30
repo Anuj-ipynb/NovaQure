@@ -11,6 +11,7 @@ from .projects import router as project_router
 from .experiments import router as experiment_router
 from .molecules import router as molecule_router
 from .rankings import router as ranking_router
+from .reliability import router as reliability_router
 
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "experiment_router",
     "molecule_router",
     "ranking_router",
+    "reliability_router",
 ]
