@@ -295,14 +295,7 @@ class ChEMBLAPI:
             target_chembl_id,
         )
 
-        records = self._paginate(
-            endpoint="activity",
-            params={
-                "target_chembl_id": target_chembl_id,
-                "standard_type": activity_type,
-            },
-            result_key="activities",
-        )
+        records = self.fetch_activity_records(target_chembl_id, activity_type)
 
         activities: list[ChEMBLActivity] = []
         seen: set[tuple[str, float]] = set()
@@ -375,6 +368,24 @@ class ChEMBLAPI:
         )
 
         return activities
+
+    def fetch_activity_records(
+        self,
+        target_chembl_id: str,
+        activity_type: str = DEFAULT_ACTIVITY_TYPE,
+    ) -> list[dict[str, Any]]:
+        """
+        Return raw ChEMBL activity records.
+        """
+
+        return self._paginate(
+            endpoint="activity",
+            params={
+                "target_chembl_id": target_chembl_id,
+                "standard_type": activity_type,
+            },
+            result_key="activities",
+        )
 
     # ---------------------------------------------------------
     # Health Check
