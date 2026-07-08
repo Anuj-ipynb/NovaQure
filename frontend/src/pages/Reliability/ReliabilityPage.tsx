@@ -1,73 +1,104 @@
-const metrics = [
-  {
-    title: "NQRE Reliability",
-    value: "94.8%",
-    color: "#10B981",
-    description: "Overall platform trust score",
-  },
-  {
-    title: "AI Confidence",
-    value: "93.2%",
-    color: "#06B6D4",
-    description: "Prediction confidence level",
-  },
-  {
-    title: "Quantum Noise",
-    value: "4.1%",
-    color: "#F59E0B",
-    description: "Measured quantum disturbance",
-  },
-  {
-    title: "AQKC Corrections",
-    value: "128",
-    color: "#8B5CF6",
-    description: "Adaptive corrections applied",
-  },
-]
+import { useReliability } from "../../hooks/reliability/useReliability";
+import ReliabilityTrendChart from "../../components/charts/ReliabilityTrendChart";
 
-const systems = [
-  {
-    name: "Reliability Engine",
-    status: "Operational",
-    color: "#10B981",
-  },
-  {
-    name: "Noise Estimator",
-    status: "Operational",
-    color: "#10B981",
-  },
-  {
-    name: "AQKC Module",
-    status: "Operational",
-    color: "#10B981",
-  },
-  {
-    name: "Calibration Layer",
-    status: "Monitoring",
-    color: "#F59E0B",
-  },
-]
-
-const distributions = [
-  {
-    range: "95-100%",
-    count: 142,
-  },
-  {
-    range: "90-95%",
-    count: 487,
-  },
-  {
-    range: "85-90%",
-    count: 1024,
-  },
-  {
-    range: "80-85%",
-    count: 812,
-  },
-]
+function getStatusColor(status: string) {
+  if (status === "Operational") return "#10B981";
+  if (status === "Monitoring") return "#F59E0B";
+  return "#EF4444";
+}
 
 export default function ReliabilityPage() {
+  const {
+    data,
+    isLoading,
+    error,
+  } = useReliability();
+
+  const reliability = data?.[0];
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          padding: 50,
+          color: "white",
+        }}
+      >
+        Loading reliability metrics...
+      </div>
+    );
+  }
+
+  if (
+    error ||
+    !reliability
+  ) {
+    return (
+      <div
+        style={{
+          padding: 50,
+          color: "#EF4444",
+        }}
+      >
+        Failed to load reliability data.
+      </div>
+    );
+  }
+
+  const metrics = [
+    {
+      title: "NQRE Reliability",
+      value: `${reliability.overall_reliability}%`,
+      color: "#10B981",
+      description:
+        "Overall platform trust score",
+    },
+    {
+      title: "AI Confidence",
+      value: `${reliability.ai_confidence}%`,
+      color: "#06B6D4",
+      description:
+        "Prediction confidence level",
+    },
+    {
+      title: "Quantum Noise",
+      value: `${reliability.quantum_noise}%`,
+      color: "#F59E0B",
+      description:
+        "Measured quantum disturbance",
+    },
+    {
+      title: "AQKC Corrections",
+      value: `${reliability.aqkc_corrections}`,
+      color: "#8B5CF6",
+      description:
+        "Adaptive corrections applied",
+    },
+  ];
+
+  const systems = [
+    {
+      name: "Reliability Engine",
+      status:
+        reliability.reliability_engine_status,
+    },
+    {
+      name: "Noise Estimator",
+      status:
+        reliability.noise_estimator_status,
+    },
+    {
+      name: "AQKC Module",
+      status:
+        reliability.aqkc_module_status,
+    },
+    {
+      name: "Calibration Layer",
+      status:
+        reliability.calibration_layer_status,
+    },
+  ];
+
   return (
     <div>
       {/* Header */}
@@ -75,7 +106,8 @@ export default function ReliabilityPage() {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent:
+            "space-between",
           alignItems: "center",
           marginBottom: 40,
         }}
@@ -96,7 +128,8 @@ export default function ReliabilityPage() {
               marginTop: 10,
             }}
           >
-            Trust calibration and uncertainty quantification.
+            Trust calibration and uncertainty
+            quantification.
           </p>
         </div>
 
@@ -121,62 +154,67 @@ export default function ReliabilityPage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4,1fr)",
+          gridTemplateColumns:
+            "repeat(4,1fr)",
           gap: 24,
           marginBottom: 40,
         }}
       >
-        {metrics.map((metric) => (
-          <div
-            key={metric.title}
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 24,
-              padding: 28,
-              border:
-                "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <p
+        {metrics.map(
+          (metric) => (
+            <div
+              key={metric.title}
               style={{
-                color: "#94A3B8",
+                background:
+                  "rgba(255,255,255,0.05)",
+                borderRadius: 24,
+                padding: 28,
+                border:
+                  "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              {metric.title}
-            </p>
+              <p
+                style={{
+                  color: "#94A3B8",
+                }}
+              >
+                {metric.title}
+              </p>
 
-            <h1
-              style={{
-                marginTop: 15,
-                fontSize: 42,
-                color: metric.color,
-              }}
-            >
-              {metric.value}
-            </h1>
+              <h1
+                style={{
+                  marginTop: 15,
+                  fontSize: 42,
+                  color: metric.color,
+                }}
+              >
+                {metric.value}
+              </h1>
 
-            <p
-              style={{
-                marginTop: 15,
-                color: "#94A3B8",
-              }}
-            >
-              {metric.description}
-            </p>
-          </div>
-        ))}
+              <p
+                style={{
+                  marginTop: 15,
+                  color: "#94A3B8",
+                }}
+              >
+                {metric.description}
+              </p>
+            </div>
+          )
+        )}
       </div>
 
-      {/* Main Grid */}
+      {/* System Status + Chart */}
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "2fr 1fr",
+          gridTemplateColumns:
+            "1fr 2fr",
           gap: 24,
         }}
       >
-        {/* Distribution */}
+        {/* System Status */}
 
         <div
           style={{
@@ -188,63 +226,46 @@ export default function ReliabilityPage() {
               "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <h2>
-            Reliability Distribution
-          </h2>
-
-          <div
+          <h2
             style={{
-              marginTop: 30,
+              marginBottom: 20,
             }}
           >
-            {distributions.map((item) => (
+            Subsystem Status
+          </h2>
+
+          {systems.map(
+            (system) => (
               <div
-                key={item.range}
+                key={system.name}
                 style={{
-                  marginBottom: 28,
+                  marginTop: 25,
+                  paddingBottom: 20,
+                  borderBottom:
+                    "1px solid rgba(255,255,255,0.05)",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent:
-                      "space-between",
-                    marginBottom: 10,
-                  }}
-                >
-                  <span>{item.range}</span>
-                  <span>{item.count}</span>
-                </div>
+                <h3>
+                  {system.name}
+                </h3>
 
-                <div
+                <p
                   style={{
-                    height: 14,
-                    borderRadius: 999,
-                    background:
-                      "#1E293B",
+                    marginTop: 8,
+                    color:
+                      getStatusColor(
+                        system.status
+                      ),
                   }}
                 >
-                  <div
-                    style={{
-                      width:
-                        `${Math.min(
-                          item.count / 12,
-                          100
-                        )}%`,
-                      height: "100%",
-                      borderRadius:
-                        999,
-                      background:
-                        "linear-gradient(90deg,#06B6D4,#7C3AED)",
-                    }}
-                  />
-                </div>
+                  ● {system.status}
+                </p>
               </div>
-            ))}
-          </div>
+            )
+          )}
         </div>
 
-        {/* System Health */}
+        {/* Real Historical Chart */}
 
         <div
           style={{
@@ -256,36 +277,21 @@ export default function ReliabilityPage() {
               "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <h2>Subsystem Status</h2>
+          <h2
+            style={{
+              marginBottom: 20,
+            }}
+          >
+            Reliability Trends
+          </h2>
 
-          {systems.map((system) => (
-            <div
-              key={system.name}
-              style={{
-                marginTop: 25,
-                paddingBottom: 20,
-                borderBottom:
-                  "1px solid rgba(255,255,255,0.05)",
-              }}
-            >
-              <h3>
-                {system.name}
-              </h3>
-
-              <p
-                style={{
-                  marginTop: 8,
-                  color: system.color,
-                }}
-              >
-                ● {system.status}
-              </p>
-            </div>
-          ))}
+          <ReliabilityTrendChart
+            history={data ?? []}
+          />
         </div>
       </div>
 
-      {/* Bottom Panel */}
+      {/* Explainability */}
 
       <div
         style={{
@@ -313,33 +319,31 @@ export default function ReliabilityPage() {
         >
           <InfoCard
             title="Confidence Calibration"
-            value="92.4%"
+            value={`${reliability.confidence_calibration}%`}
           />
 
           <InfoCard
             title="Noise Compensation"
-            value="96.8%"
+            value={`${reliability.noise_compensation}%`}
           />
 
           <InfoCard
             title="Prediction Stability"
-            value="95.1%"
+            value={`${reliability.prediction_stability}%`}
           />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function InfoCard(
-  {
-    title,
-    value,
-  }: {
-    title: string
-    value: string
-  }
-) {
+function InfoCard({
+  title,
+  value,
+}: {
+  title: string;
+  value: string;
+}) {
   return (
     <div
       style={{
@@ -366,5 +370,5 @@ function InfoCard(
         {value}
       </h2>
     </div>
-  )
+  );
 }

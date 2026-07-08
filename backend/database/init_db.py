@@ -18,8 +18,15 @@ from backend.models.molecule import Molecule
 from backend.models.evaluation import Evaluation
 from backend.models.ranking import Ranking
 from backend.models.agent_log import AgentLog
+from backend.models.reliability import ReliabilityMetric
 
 
 def initialize_database():
+    """
+    Creates all database tables that have
+    been registered with SQLAlchemy metadata.
+    """
 
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(
+        bind=engine,
+    )

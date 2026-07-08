@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.1",
+    "@tanstack/react-query-devtools": "^5.101.1",
     "3dmol": "^2.5.5",
     "axios": "^1.18.1",
     "plotly.js": "^3.6.0",

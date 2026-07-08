@@ -5,6 +5,10 @@ from sqlalchemy.orm import Session
 
 from backend.database.dependencies import get_db
 
+# ----------------------------------------------------------
+# Repositories
+# ----------------------------------------------------------
+
 from backend.repositories.project_repository import (
     ProjectRepository,
 )
@@ -17,6 +21,13 @@ from backend.repositories.molecule_repository import (
 from backend.repositories.ranking_repository import (
     RankingRepository,
 )
+from backend.repositories.reliability_repository import (
+    ReliabilityRepository,
+)
+
+# ----------------------------------------------------------
+# Services
+# ----------------------------------------------------------
 
 from backend.services.project_service import (
     ProjectService,
@@ -30,14 +41,20 @@ from backend.services.molecule_service import (
 from backend.services.ranking_service import (
     RankingService,
 )
-
+from backend.services.reliability_service import (
+    ReliabilityService,
+)
 
 # ----------------------------------------------------------
 # Database
 # ----------------------------------------------------------
 
 
-def get_database() -> Generator[Session, None, None]:
+def get_database() -> Generator[
+    Session,
+    None,
+    None,
+]:
     """
     Shared database dependency.
     """
@@ -51,12 +68,18 @@ def get_database() -> Generator[Session, None, None]:
 
 
 def get_project_service(
-    db: Session = Depends(get_database),
+    db: Session = Depends(
+        get_database
+    ),
 ) -> ProjectService:
 
-    repository = ProjectRepository(db)
+    repository = ProjectRepository(
+        db
+    )
 
-    return ProjectService(repository)
+    return ProjectService(
+        repository
+    )
 
 
 # ----------------------------------------------------------
@@ -65,12 +88,20 @@ def get_project_service(
 
 
 def get_experiment_service(
-    db: Session = Depends(get_database),
+    db: Session = Depends(
+        get_database
+    ),
 ) -> ExperimentService:
 
-    repository = ExperimentRepository(db)
+    repository = (
+        ExperimentRepository(
+            db
+        )
+    )
 
-    return ExperimentService(repository)
+    return ExperimentService(
+        repository
+    )
 
 
 # ----------------------------------------------------------
@@ -79,12 +110,20 @@ def get_experiment_service(
 
 
 def get_molecule_service(
-    db: Session = Depends(get_database),
+    db: Session = Depends(
+        get_database
+    ),
 ) -> MoleculeService:
 
-    repository = MoleculeRepository(db)
+    repository = (
+        MoleculeRepository(
+            db
+        )
+    )
 
-    return MoleculeService(repository)
+    return MoleculeService(
+        repository
+    )
 
 
 # ----------------------------------------------------------
@@ -93,9 +132,39 @@ def get_molecule_service(
 
 
 def get_ranking_service(
-    db: Session = Depends(get_database),
+    db: Session = Depends(
+        get_database
+    ),
 ) -> RankingService:
 
-    repository = RankingRepository(db)
+    repository = (
+        RankingRepository(
+            db
+        )
+    )
 
-    return RankingService(repository)
+    return RankingService(
+        repository
+    )
+
+
+# ----------------------------------------------------------
+# Reliability Service
+# ----------------------------------------------------------
+
+
+def get_reliability_service(
+    db: Session = Depends(
+        get_database
+    ),
+) -> ReliabilityService:
+
+    repository = (
+        ReliabilityRepository(
+            db
+        )
+    )
+
+    return ReliabilityService(
+        repository
+    )
