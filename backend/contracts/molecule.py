@@ -1,3 +1,12 @@
+from pydantic import BaseModel, Field
+
+
+class Molecule(BaseModel):
+    molecule_id: str
+    smiles: str
+    selfies: str
+
+    source: str = "dataset"
 from __future__ import annotations
 
 from pydantic import BaseModel
@@ -26,6 +35,7 @@ class Molecule(BaseModel):
 
     latent_vector: list[float] | None = None
 
+    generation_iteration: int = 0
     generation_iteration: int = 0
 
     metrics: CandidateMetrics = Field(
