@@ -19,8 +19,6 @@ from rdkit import Chem
 from rdkit.Chem.rdchem import Mol
 from rdkit.Contrib.SA_Score import sascorer
 
-from backend.contracts.molecule import Molecule
-
 logger = logging.getLogger(__name__)
 
 
@@ -42,6 +40,8 @@ class SAService:
     Typical range:
         1.0  -> Very easy
         10.0 -> Very difficult
+
+    This service is stateless and thread-safe.
     """
 
     @staticmethod
@@ -64,7 +64,6 @@ class SAService:
         ValueError
             If the supplied SMILES is invalid.
         """
-
         rdkit_molecule = Chem.MolFromSmiles(smiles)
 
         if rdkit_molecule is None:
@@ -72,14 +71,14 @@ class SAService:
 
         return rdkit_molecule
 
-    def calculate_sa(self, molecule: Molecule) -> float:
+    def calculate_sa(self, smiles: str) -> float:
         """
         Compute the Synthetic Accessibility (SA) score.
 
         Parameters
         ----------
-        molecule : Molecule
-            Molecule contract.
+        smiles : str
+            Canonical SMILES representation.
 
         Returns
         -------
@@ -98,32 +97,57 @@ class SAService:
         Exception
             Any exception propagated from RDKit Contrib SA scorer.
         """
-
         logger.info(
-            "Starting SA evaluation | molecule_id=%s",
-            molecule.molecule_id,
+            "Starting SA evaluation | smiles=%s",
+            smiles,
         )
 
-        rdkit_molecule = self._build_rdkit_molecule(
-            molecule.smiles
-        )
+        rdkit_molecule = self._build_rdkit_molecule(smiles)
 
         try:
-            sa_score = float(
-                sascorer.calculateScore(rdkit_molecule)
-            )
+            sa_score = float(sascorer.calculateScore(rdkit_molecule))
 
         except Exception:
             logger.exception(
-                "SA calculation failed | molecule_id=%s",
-                molecule.molecule_id,
+                "SA calculation failed | smiles=%s",
+                smiles,
             )
             raise
 
         logger.info(
-            "Completed SA evaluation | molecule_id=%s | sa=%.4f",
-            molecule.molecule_id,
+            "Completed SA evaluation | smiles=%s | sa=%.4f",
+            smiles,
             sa_score,
         )
 
         return sa_score
+
+    # ---------------------------------------------------------
+    # Health Check
+    # ---------------------------------------------------------
+
+    def health_check(self) -> bool:
+        """
+        Verify the SA service is operational.
+        """
+        try:
+            self._build_rdkit_molecule("CCO")
+            return True
+        except Exception:
+            return False
+
+    # ---------------------------------------------------------
+    # Context Manager
+    # ---------------------------------------------------------
+
+    def __enter__(self) -> "SAService":
+        return self
+
+    def __exit__(
+        self,
+        exc_type,
+        exc_val,
+        exc_tb,
+    ) -> bool:
+        # Returning False explicitly avoids exception suppression
+        return False

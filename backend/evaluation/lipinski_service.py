@@ -19,8 +19,6 @@ from rdkit.Chem import Descriptors
 from rdkit.Chem import Lipinski
 from rdkit.Chem.rdchem import Mol
 
-from backend.contracts.molecule import Molecule
-
 logger = logging.getLogger(__name__)
 
 
@@ -57,7 +55,6 @@ class LipinskiService:
         ValueError
             If the supplied SMILES is invalid.
         """
-
         rdkit_molecule = Chem.MolFromSmiles(smiles)
 
         if rdkit_molecule is None:
@@ -65,32 +62,28 @@ class LipinskiService:
 
         return rdkit_molecule
 
-    def evaluate(self, molecule: Molecule) -> bool:
+    def evaluate(self, smiles: str) -> bool:
         """
         Evaluate Lipinski's Rule of Five.
 
         Parameters
         ----------
-        molecule : Molecule
-            Molecule contract.
+        smiles : str
+            Canonical SMILES representation.
 
         Returns
         -------
         bool
             True if all Lipinski rules are satisfied.
         """
-
         logger.info(
-            "Starting Lipinski evaluation | molecule_id=%s",
-            molecule.molecule_id,
+            "Starting Lipinski evaluation | smiles=%s",
+            smiles,
         )
 
-        rdkit_molecule = self._build_rdkit_molecule(
-            molecule.smiles
-        )
+        rdkit_molecule = self._build_rdkit_molecule(smiles)
 
         try:
-
             molecular_weight = Descriptors.MolWt(rdkit_molecule)
             logp = Crippen.MolLogP(rdkit_molecule)
             hydrogen_donors = Lipinski.NumHDonors(rdkit_molecule)
@@ -98,8 +91,8 @@ class LipinskiService:
 
         except Exception:
             logger.exception(
-                "Lipinski calculation failed | molecule_id=%s",
-                molecule.molecule_id,
+                "Lipinski calculation failed | smiles=%s",
+                smiles,
             )
             raise
 
@@ -113,14 +106,14 @@ class LipinskiService:
         logger.info(
             (
                 "Completed Lipinski evaluation | "
-                "molecule_id=%s | "
+                "smiles=%s | "
                 "mw=%.2f | "
                 "logp=%.2f | "
                 "hbd=%d | "
                 "hba=%d | "
                 "pass=%s"
             ),
-            molecule.molecule_id,
+            smiles,
             molecular_weight,
             logp,
             hydrogen_donors,
@@ -129,3 +122,33 @@ class LipinskiService:
         )
 
         return lipinski_pass
+
+    # ---------------------------------------------------------
+    # Health Check
+    # ---------------------------------------------------------
+
+    def health_check(self) -> bool:
+        """
+        Verify the Lipinski service is operational.
+        """
+        try:
+            self._build_rdkit_molecule("CCO")
+            return True
+        except Exception:
+            return False
+
+    # ---------------------------------------------------------
+    # Context Manager
+    # ---------------------------------------------------------
+
+    def __enter__(self) -> "LipinskiService":
+        return self
+
+    def __exit__(
+        self,
+        exc_type,
+        exc_val,
+        exc_tb,
+    ) -> bool:
+        # Returning False explicitly avoids exception suppression
+        return False

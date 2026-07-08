@@ -18,8 +18,6 @@ from rdkit import Chem
 from rdkit.Chem import QED
 from rdkit.Chem.rdchem import Mol
 
-from backend.contracts.molecule import Molecule
-
 logger = logging.getLogger(__name__)
 
 
@@ -57,7 +55,6 @@ class QEDService:
         ValueError
             If the supplied SMILES is invalid.
         """
-
         rdkit_molecule = Chem.MolFromSmiles(smiles)
 
         if rdkit_molecule is None:
@@ -65,44 +62,71 @@ class QEDService:
 
         return rdkit_molecule
 
-    def calculate_qed(self, molecule: Molecule) -> float:
+    def calculate_qed(self, smiles: str) -> float:
         """
         Compute the Quantitative Estimate of Drug-likeness (QED).
 
         Parameters
         ----------
-        molecule : Molecule
-            Molecule contract.
+        smiles : str
+            Canonical SMILES representation.
 
         Returns
         -------
         float
             QED score in the range [0, 1].
         """
-
         logger.info(
-            "Starting QED evaluation | molecule_id=%s",
-            molecule.molecule_id,
+            "Starting QED evaluation | smiles=%s",
+            smiles,
         )
 
-        rdkit_molecule = self._build_rdkit_molecule(
-            molecule.smiles
-        )
+        rdkit_molecule = self._build_rdkit_molecule(smiles)
 
         try:
             qed_score = float(QED.qed(rdkit_molecule))
 
         except Exception:
             logger.exception(
-                "RDKit QED calculation failed | molecule_id=%s",
-                molecule.molecule_id,
+                "RDKit QED calculation failed | smiles=%s",
+                smiles,
             )
             raise
 
         logger.info(
-            "Completed QED evaluation | molecule_id=%s | qed=%.4f",
-            molecule.molecule_id,
+            "Completed QED evaluation | smiles=%s | qed=%.4f",
+            smiles,
             qed_score,
         )
 
         return qed_score
+
+    # ---------------------------------------------------------
+    # Health Check
+    # ---------------------------------------------------------
+
+    def health_check(self) -> bool:
+        """
+        Verify the QED service is operational.
+        """
+        try:
+            self._build_rdkit_molecule("CCO")
+            return True
+        except Exception:
+            return False
+
+    # ---------------------------------------------------------
+    # Context Manager
+    # ---------------------------------------------------------
+
+    def __enter__(self) -> "QEDService":
+        return self
+
+    def __exit__(
+        self,
+        exc_type,
+        exc_val,
+        exc_tb,
+    ) -> bool:
+        # Returning False ensures exception bubbles are not swallowed
+        return False

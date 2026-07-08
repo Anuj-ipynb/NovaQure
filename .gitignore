@@ -44,3 +44,6 @@ models/chemprop/
 # ==============================================================================
 .DS_Store
 Thumbs.db
+
+# Evaluation artifacts
+artifacts/
