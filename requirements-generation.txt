@@ -1,0 +1,16 @@
+numpy
+pandas
+
+rdkit
+selfies
+networkx
+
+torch
+torchvision
+torchaudio
+
+pydantic
+
+pytest
+rich
+tqdm
