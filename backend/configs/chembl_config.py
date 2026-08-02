@@ -55,7 +55,7 @@ PROCESSED_DATASET_PATH = CHEMBL_DATASET_ROOT / "processed"
 # Model Paths
 # ==========================================================
 
-MODEL_ROOT = PROJECT_ROOT / "models"
+MODEL_ROOT = PROJECT_ROOT / "backend" / "models"
 
 CHEMPROP_MODEL_PATH = MODEL_ROOT / "chemprop"
 

@@ -219,15 +219,15 @@ class GenerationService:
         print("=" * 60)
 
         print(
-            f"✓ Molecules : {GenerationConfig.OUTPUT_FILE.name}"
+            f"* Molecules : {GenerationConfig.OUTPUT_FILE.name}"
         )
 
         print(
-            "✓ Report    : generation_report.json"
+            "* Report    : generation_report.json"
         )
 
         print(
-            f"✓ Metadata  : {GenerationConfig.METADATA_FILE.name}"
+            f"* Metadata  : {GenerationConfig.METADATA_FILE.name}"
         )
 
         print("=" * 60)

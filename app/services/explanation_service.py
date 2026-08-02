@@ -3,31 +3,36 @@ from typing import Dict
 
 class ExplanationService:
     def generate(self, scored_molecule: Dict) -> Dict:
-        comp = scored_molecule["components"]
+        comp = scored_molecule.get("components", scored_molecule)
 
         reasons = []
 
         # Affinity reasoning
-        if comp["affinity_score"] > 0.7:
+        affinity_score = comp.get("affinity_score", 0.0)
+        if affinity_score > 0.7:
             reasons.append("strong binding affinity")
-        elif comp["affinity_score"] < 0.4:
+        elif affinity_score < 0.4:
             reasons.append("weak binding affinity")
         else:
             reasons.append("moderate binding affinity")
 
         # Reliability reasoning
-        if comp["reliability"] > 0.8:
+        reliability = comp.get("reliability_score", 0.0)
+        if reliability > 0.8:
             reasons.append("high reliability")
-        elif comp["reliability"] < 0.6:
+        elif reliability < 0.6:
             reasons.append("low confidence prediction")
         else:
             reasons.append("moderate reliability")
 
         # Drug-likeness reasoning
-        if comp["qed"] > 0.7:
-            reasons.append("good drug-likeness")
-        elif comp["qed"] < 0.5:
-            reasons.append("poor drug-likeness")
+        qed = comp.get("qed", 0.0)
+        if qed > 0.7:
+            reasons.append("high drug-likeness")
+        elif qed < 0.6:
+            reasons.append("suboptimal drug-likeness")
+        else:
+            reasons.append("acceptable drug-likeness")
 
         reason_text = ", ".join(reasons)
 

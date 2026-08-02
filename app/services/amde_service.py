@@ -1,37 +1,58 @@
-from typing import Dict
+from typing import Dict, List, Protocol
+from dataclasses import dataclass
 
+@dataclass
+class Assessment:
+    metric: str
+    score: float
+    passed: bool
+    reason: str
+
+class DecisionStrategy(Protocol):
+    def assess(self, molecule: Dict) -> Assessment: ...
+
+class AffinityAssessment:
+    def assess(self, molecule: Dict) -> Assessment:
+        score = molecule.get("affinity_score", 0.0)
+        return Assessment("affinity", score, score >= 0.5, "poor binding affinity" if score < 0.5 else "good binding affinity")
+
+class ReliabilityAssessment:
+    def assess(self, molecule: Dict) -> Assessment:
+        score = molecule.get("reliability_score", 0.0)
+        return Assessment("reliability", score, score >= 0.5, "low reliability score" if score < 0.5 else "high reliability")
+
+class QEDAssessment:
+    def assess(self, molecule: Dict) -> Assessment:
+        score = molecule.get("qed", 0.0)
+        return Assessment("drug-likeness", score, score >= 0.6, "drug-likeness below threshold" if score < 0.6 else "good drug-likeness")
 
 class AMDEService:
+    def __init__(self):
+        self.strategies = [
+            ReliabilityAssessment(),
+            AffinityAssessment(),
+            QEDAssessment(),
+        ]
+
     def decide(self, molecule: Dict) -> Dict:
-        comp = molecule["components"]
+        comp = molecule.get("components") or molecule
 
-        affinity = comp["affinity_score"]
-        reliability = comp["reliability"]
-        qed = comp["qed"]
+        assessments = [strategy.assess(comp) for strategy in self.strategies]
 
-        # Decision logic (EXPLAINABLE — very important)
-        if reliability < 0.6:
-            decision = "regenerate"
-            reason = "low reliability score"
+        # Reasoning logic
+        decision = "keep"
+        reason = "molecule meets all quality thresholds"
 
-        elif affinity < 0.4:
-            decision = "refine"
-            reason = "poor binding affinity"
+        for assessment in assessments:
+            if not assessment.passed:
+                decision = "regenerate" if assessment.metric == "reliability" else "refine"
+                reason = assessment.reason
+                break
 
-        elif qed < 0.5:
-            decision = "refine"
-            reason = "low drug-likeness"
-
-        else:
-            decision = "keep"
-            reason = "meets all quality thresholds"
-
-        # Confidence calculation
-        confidence = round((affinity + reliability + qed) / 3, 2)
+        confidence = round(sum(a.score for a in assessments) / len(assessments), 2)
 
         return {
             "decision": decision,
             "reason": reason,
             "confidence": confidence
         }
-    
