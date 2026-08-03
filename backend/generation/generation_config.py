@@ -39,7 +39,7 @@ class GenerationConfig:
 
     RANDOM_SEED = 42
 
-    ENCODER = "embedding"
+    ENCODER = "jtvae"
 
     SAMPLER = "qcbm"
 
