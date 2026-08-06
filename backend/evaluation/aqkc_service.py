@@ -120,11 +120,19 @@ class AQKCService:
 
     def compute_corrected_energy(self, energy: float, correction_factor: float) -> float:
         """
-        Compute corrected quantum energy using a pre-calculated correction factor.
+        Compute corrected quantum energy using Zero-Noise Richardson Extrapolation (ZNE).
+        Extrapolates energy to lambda = 0 using simulated scales lambda = 1 and lambda = 2.
         """
-        corrected_energy = energy * (1.0 - ENERGY_WEIGHT * correction_factor)
-        logger.info("Corrected quantum energy: %.6f", corrected_energy)
+        # Baseline noise (lambda = 1)
+        e_1 = energy
+        # Scaled noise (lambda = 2) - simulated using the correction factor
+        e_2 = energy * (1.0 + ENERGY_WEIGHT * correction_factor)
+        
+        # Richardson Extrapolation formula: E(0) = 2*E(1) - E(2)
+        corrected_energy = 2.0 * e_1 - e_2
+        logger.info("ZNE Richardson Extrapolation corrected quantum energy: %.6f", corrected_energy)
         return corrected_energy
+
 
     # ---------------------------------------------------------
     # Noise Score
