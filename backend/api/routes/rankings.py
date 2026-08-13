@@ -17,6 +17,29 @@ router = APIRouter(
 )
 
 
+def _map_ranking_response(ranking) -> dict:
+    smiles = None
+    affinity = None
+    reliability = ranking.confidence
+    
+    if ranking.molecule:
+        smiles = ranking.molecule.smiles
+        if ranking.molecule.evaluation:
+            affinity = ranking.molecule.evaluation.binding_affinity
+
+    return {
+        "id": ranking.id,
+        "molecule_id": ranking.molecule_id,
+        "rank": ranking.rank,
+        "score": ranking.score,
+        "confidence": ranking.confidence,
+        "created_at": ranking.created_at,
+        "updated_at": ranking.updated_at,
+        "smiles": smiles,
+        "reliability": reliability,
+        "affinity": affinity,
+    }
+
 # ---------------------------------------------------------
 # Create Ranking
 # ---------------------------------------------------------
@@ -44,7 +67,7 @@ def create_ranking(
             confidence=ranking.confidence,
         )
 
-        return created
+        return _map_ranking_response(created)
 
     except ValueError as exc:
 
@@ -70,7 +93,8 @@ def list_rankings(
     ],
 ):
 
-    return service.list_rankings()
+    rankings = service.list_rankings()
+    return [_map_ranking_response(r) for r in rankings]
 
 
 # ---------------------------------------------------------
@@ -101,7 +125,7 @@ def get_ranking(
             detail="Ranking not found.",
         )
 
-    return ranking
+    return _map_ranking_response(ranking)
 
 
 # ---------------------------------------------------------

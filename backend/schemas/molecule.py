@@ -93,6 +93,8 @@ class MoleculeResponse(TimestampSchema):
 
     score: float
 
+    evaluation: Optional[dict] = None
+
 
 # ---------------------------------------------------------
 # Molecule Summary

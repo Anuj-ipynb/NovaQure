@@ -13,7 +13,12 @@ from backend.evaluation.chemprop_train import ChempropTrainer
 from backend.configs.chemprop_config import MODEL_PATH, MODEL_DIRECTORY
 
 def main():
-    protein_name = "EGFR"
+    import argparse
+    parser = argparse.ArgumentParser(description="Train Chemprop GNN for target protein")
+    parser.add_argument("--target", type=str, default="EGFR", help="Target protein name (e.g., EGFR, HER2, KRAS)")
+    args, _ = parser.parse_known_args()
+
+    protein_name = args.target.upper()
     print(f"=== Starting Chemprop Dataset & Training Pipeline for {protein_name} ===")
 
     # 1. Fetch activities from ChEMBL and save dataset

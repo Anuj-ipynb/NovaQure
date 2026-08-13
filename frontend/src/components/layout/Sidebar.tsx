@@ -6,7 +6,6 @@ import {
   FaDatabase,
   FaShieldAlt,
   FaSignOutAlt,
-  FaUserCircle,
 } from "react-icons/fa";
 
 import { NavLink, useNavigate } from "react-router-dom";

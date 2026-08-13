@@ -11,7 +11,7 @@ def run_audit():
     print("======================================================================")
     
     # 1. Fetch Experiment Info
-    experiment = pd.read_sql_query("SELECT * FROM experiments ORDER BY id DESC LIMIT 1", conn)
+    experiment = pd.read_sql_query("SELECT * FROM experiments ORDER BY created_at DESC LIMIT 1", conn)
     if experiment.empty:
         print("No experiments found in the database. Run the pipeline first.")
         conn.close()

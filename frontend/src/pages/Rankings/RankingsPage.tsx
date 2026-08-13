@@ -1,18 +1,14 @@
+import { useState } from "react";
 import { useRankings } from "../../hooks/rankings/useRankings";
 
 import RankingScoreChart from "../../components/charts/RankingScoreChart";
 import RankingConfidenceChart from "../../components/charts/RankingConfidenceChart";
 import PromotionFunnelChart from "../../components/charts/PromotionFunnelChart";
 import RankingPieChart from "../../components/charts/RankingPieChart";
-
-const medalColors = [
-  "#FFD700",
-  "#C0C0C0",
-  "#CD7F32",
-  "#6366F1",
-];
+import MoleculeViewer3D from "../../components/molecules/MoleculeViewer3D";
 
 export default function RankingsPage() {
+  const [selectedSmiles, setSelectedSmiles] = useState<string | null>(null);
   const {
     data: rankings,
     isLoading,
@@ -27,8 +23,9 @@ export default function RankingsPage() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          color: "#94A3B8",
-          fontSize: 24,
+          color: "var(--color-graphite)",
+          fontSize: 20,
+          fontFamily: "var(--font-aeonik)",
         }}
       >
         Loading rankings...
@@ -44,8 +41,9 @@ export default function RankingsPage() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          color: "#EF4444",
-          fontSize: 24,
+          color: "var(--color-obsidian)",
+          fontSize: 20,
+          fontFamily: "var(--font-aeonik)",
         }}
       >
         Failed to connect to ranking service.
@@ -55,273 +53,218 @@ export default function RankingsPage() {
 
   const topScore =
     rankings?.length
-      ? Math.max(
-          ...rankings.map(
-            (r) => r.score,
-          ),
-        ).toFixed(1)
+      ? Math.max(...rankings.map((r) => r.score)).toFixed(1)
       : "0";
 
   const avgConfidence =
     rankings?.length
       ? (
-          rankings.reduce(
-            (sum, item) =>
-              sum +
-              item.confidence *
-                100,
-            0,
-          ) / rankings.length
+          rankings.reduce((sum, item) => sum + (item.confidence > 1.0 ? item.confidence : item.confidence * 100), 0) /
+          rankings.length
         ).toFixed(1)
       : "0";
 
   return (
-    <div>
-      {/* Header */}
-
+    <div style={{ maxWidth: "var(--page-max-width)", margin: "0 auto", padding: "40px 16px" }}>
+      {/* Header Opener */}
       <div
         style={{
           display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center",
-          marginBottom: 40,
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          marginBottom: 48,
+          borderBottom: "1px solid var(--color-pale-stone)",
+          paddingBottom: 28,
         }}
       >
         <div>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.55px", color: "var(--color-warm-sandstone)" }}>
+            prioritization metrics
+          </span>
           <h1
             style={{
               fontSize: 44,
-              fontWeight: 800,
+              fontWeight: 400,
+              fontFamily: "var(--font-aeonik)",
+              letterSpacing: "-0.4px",
+              color: "var(--color-obsidian)",
+              marginTop: 8,
             }}
           >
             Molecular Ranking Engine
           </h1>
-
           <p
             style={{
-              color: "#94A3B8",
+              color: "var(--color-graphite)",
               marginTop: 10,
+              fontSize: 16,
             }}
           >
-            Explainable AI prioritization of candidate molecules.
+            Explainable AI prioritization of candidate drug scaffolds.
           </p>
         </div>
 
         <button
           style={{
-            padding:
-              "16px 28px",
-            borderRadius: 18,
+            padding: "12px 24px",
+            borderRadius: "var(--radius-buttons)",
             border: "none",
-            background:
-              "linear-gradient(90deg,#7C3AED,#4F46E5)",
-            color: "white",
-            fontWeight: 700,
+            background: "var(--color-charcoal)",
+            color: "var(--color-pure-white)",
+            fontWeight: 500,
+            fontSize: 14,
             cursor: "pointer",
+            fontFamily: "var(--font-aeonik)",
           }}
         >
           Export Rankings
         </button>
       </div>
 
-      {/* KPI Cards */}
-
+      {/* KPI Section */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(4,1fr)",
+          gridTemplateColumns: "repeat(4, 1fr)",
           gap: 24,
-          marginBottom: 40,
+          marginBottom: 48,
         }}
       >
         {[
-          [
-            "Candidates Ranked",
-            (
-              rankings?.length ||
-              0
-            ).toString(),
-          ],
-          [
-            "Top Score",
-            topScore,
-          ],
-          [
-            "Avg Confidence",
-            `${avgConfidence}%`,
-          ],
-          [
-            "Promotion Rate",
-            "2.3%",
-          ],
-        ].map(
-          ([title, value]) => (
-            <div
-              key={title}
+          ["Candidates Ranked", (rankings?.length || 0).toString()],
+          ["Top Score", topScore],
+          ["Avg Confidence", `${avgConfidence}%`],
+          ["Promotion Rate", "2.3%"],
+        ].map(([title, value]) => (
+          <div
+            key={title}
+            style={{
+              background: "var(--surface-soft-mist)",
+              borderRadius: "var(--radius-cards)",
+              padding: "28px 32px",
+              border: "1px solid var(--color-pale-stone)",
+            }}
+          >
+            <p
               style={{
-                background:
-                  "rgba(255,255,255,0.05)",
-                borderRadius: 24,
-                padding: 28,
-                border:
-                  "1px solid rgba(255,255,255,0.08)",
+                color: "var(--color-graphite)",
+                fontSize: 13,
+                fontFamily: "var(--font-mono)",
               }}
             >
-              <p
-                style={{
-                  color:
-                    "#94A3B8",
-                }}
-              >
-                {title}
-              </p>
-
-              <h1
-                style={{
-                  marginTop: 15,
-                  fontSize: 38,
-                }}
-              >
-                {value}
-              </h1>
-            </div>
-          ),
-        )}
+              {title}
+            </p>
+            <h1
+              style={{
+                marginTop: 12,
+                fontSize: 36,
+                fontWeight: 400,
+                color: "var(--color-obsidian)",
+                fontFamily: "var(--font-aeonik)",
+                letterSpacing: "-0.32px",
+              }}
+            >
+              {value}
+            </h1>
+          </div>
+        ))}
       </div>
 
-      {/* Analytics Row 1 */}
-
+      {/* Charts row 1 */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "1fr 1fr",
+          gridTemplateColumns: "1fr 1fr",
           gap: 24,
-          marginBottom: 40,
+          marginBottom: 48,
         }}
       >
         <div
           style={{
-            background:
-              "rgba(255,255,255,0.05)",
-            borderRadius: 28,
-            padding: 30,
-            border:
-              "1px solid rgba(255,255,255,0.08)",
+            background: "var(--surface-soft-mist)",
+            borderRadius: "var(--radius-feature-panels)",
+            padding: 32,
+            border: "1px solid var(--color-pale-stone)",
           }}
         >
-          <h2
-            style={{
-              marginBottom: 20,
-            }}
-          >
+          <h2 style={{ fontSize: 20, fontWeight: 400, marginBottom: 20, letterSpacing: "-0.2px" }}>
             Ranking Score Distribution
           </h2>
-
-          <RankingScoreChart
-            rankings={
-              rankings ?? []
-            }
-          />
+          <RankingScoreChart rankings={rankings ?? []} />
         </div>
 
         <div
           style={{
-            background:
-              "rgba(255,255,255,0.05)",
-            borderRadius: 28,
-            padding: 30,
-            border:
-              "1px solid rgba(255,255,255,0.08)",
+            background: "var(--surface-soft-mist)",
+            borderRadius: "var(--radius-feature-panels)",
+            padding: 32,
+            border: "1px solid var(--color-pale-stone)",
           }}
         >
-          <h2
-            style={{
-              marginBottom: 20,
-            }}
-          >
+          <h2 style={{ fontSize: 20, fontWeight: 400, marginBottom: 20, letterSpacing: "-0.2px" }}>
             Confidence vs Score
           </h2>
-
-          <RankingConfidenceChart
-            rankings={
-              rankings ?? []
-            }
-          />
+          <RankingConfidenceChart rankings={rankings ?? []} />
         </div>
       </div>
 
-      {/* Analytics Row 2 */}
-
+      {/* Charts row 2 */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "1fr 1fr",
+          gridTemplateColumns: "1fr 1fr",
           gap: 24,
-          marginBottom: 40,
+          marginBottom: 48,
         }}
       >
         <div
           style={{
-            background:
-              "rgba(255,255,255,0.05)",
-            borderRadius: 28,
-            padding: 30,
-            border:
-              "1px solid rgba(255,255,255,0.08)",
+            background: "var(--surface-soft-mist)",
+            borderRadius: "var(--radius-feature-panels)",
+            padding: 32,
+            border: "1px solid var(--color-pale-stone)",
           }}
         >
-          <h2
-            style={{
-              marginBottom: 20,
-            }}
-          >
+          <h2 style={{ fontSize: 20, fontWeight: 400, marginBottom: 20, letterSpacing: "-0.2px" }}>
             Promotion Funnel
           </h2>
-
-          <PromotionFunnelChart />
+          <PromotionFunnelChart shortlisted={rankings?.length || 0} promoted={Math.max(1, Math.floor((rankings?.length || 0) * 0.1))} />
         </div>
 
         <div
           style={{
-            background:
-              "rgba(255,255,255,0.05)",
-            borderRadius: 28,
-            padding: 30,
-            border:
-              "1px solid rgba(255,255,255,0.08)",
+            background: "var(--surface-soft-mist)",
+            borderRadius: "var(--radius-feature-panels)",
+            padding: 32,
+            border: "1px solid var(--color-pale-stone)",
           }}
         >
-          <h2
-            style={{
-              marginBottom: 20,
-            }}
-          >
+          <h2 style={{ fontSize: 20, fontWeight: 400, marginBottom: 20, letterSpacing: "-0.2px" }}>
             Confidence Distribution
           </h2>
-
-          <RankingPieChart
-            rankings={
-              rankings ?? []
-            }
-          />
+          <RankingPieChart rankings={rankings ?? []} />
         </div>
       </div>
 
-      {/* Leaderboard */}
+      {/* Leaderboard Open Section */}
+      <div style={{ marginBottom: 24 }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.55px", color: "var(--color-warm-sandstone)" }}>
+          experiment candidates
+        </span>
+        <h2 style={{ fontSize: 32, fontWeight: 400, marginTop: 8, letterSpacing: "-0.32px" }}>
+          Leaderboard
+        </h2>
+      </div>
 
-      {rankings?.length ===
-      0 ? (
+      {rankings?.length === 0 ? (
         <div
           style={{
-            textAlign:
-              "center",
+            textAlign: "center",
             padding: 80,
-            color:
-              "#94A3B8",
+            color: "var(--color-graphite)",
+            background: "var(--surface-soft-mist)",
+            borderRadius: "var(--radius-cards)",
+            border: "1px solid var(--color-pale-stone)",
           }}
         >
           No rankings available.
@@ -330,141 +273,122 @@ export default function RankingsPage() {
         <div
           style={{
             display: "flex",
-            flexDirection:
-              "column",
+            flexDirection: "column",
             gap: 24,
           }}
         >
-          {rankings.map(
-            (
-              ranking,
-              index,
-            ) => (
+          {(rankings || []).map((ranking) => (
+            <div
+              key={ranking.id}
+              onClick={() => setSelectedSmiles(ranking.smiles || "C")}
+              style={{
+                background: "var(--surface-soft-mist)",
+                borderRadius: "var(--radius-cards)",
+                padding: 32,
+                border: "1px solid var(--color-pale-stone)",
+                cursor: "pointer",
+                transition: "transform 0.2s, border-color 0.2s",
+              }}
+            >
               <div
-                key={
-                  ranking.id
-                }
                 style={{
-                  background:
-                    "rgba(255,255,255,0.05)",
-                  borderRadius:
-                    28,
-                  padding: 30,
-                  border: `2px solid ${
-                    medalColors[
-                      index %
-                        medalColors.length
-                    ]
-                  }`,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
                 }}
               >
-                <div
-                  style={{
-                    display:
-                      "flex",
-                    justifyContent:
-                      "space-between",
-                    alignItems:
-                      "center",
-                  }}
-                >
-                  <div>
-                    <h1
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span
                       style={{
-                        color:
-                          medalColors[
-                            index %
-                              medalColors.length
-                          ],
-                        fontSize: 40,
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 13,
+                        color: "var(--color-pure-white)",
+                        background: "var(--color-charcoal)",
+                        padding: "4px 8px",
+                        borderRadius: 4,
                       }}
                     >
                       #{ranking.rank}
-                    </h1>
-
-                    <h2>
-                      {
-                        ranking.molecule_id
-                      }
-                    </h2>
-
-                    <p
-                      style={{
-                        color:
-                          "#94A3B8",
-                        marginTop: 10,
-                      }}
-                    >
-                      AI ranked candidate molecule
-                    </p>
+                    </span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, textTransform: "uppercase", color: "var(--color-warm-sandstone)" }}>
+                      ID: {ranking.molecule_id.slice(0, 8)}
+                    </span>
                   </div>
 
-                  <div
+                  <h3
                     style={{
-                      textAlign:
-                        "right",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 18,
+                      fontWeight: 400,
+                      marginTop: 16,
+                      color: "var(--color-obsidian)",
+                      wordBreak: "break-all",
                     }}
                   >
-                    <h1
-                      style={{
-                        fontSize: 48,
-                        color:
-                          medalColors[
-                            index %
-                              medalColors.length
-                          ],
-                      }}
-                    >
-                      {
-                        ranking.score
-                      }
-                    </h1>
-
-                    <p>
-                      Composite Score
-                    </p>
-                  </div>
+                    {ranking.smiles || "Generating Structure..."}
+                  </h3>
                 </div>
 
-                <div
-                  style={{
-                    display:
-                      "grid",
-                    gridTemplateColumns:
-                      "repeat(4,1fr)",
-                    gap: 18,
-                    marginTop: 30,
-                  }}
-                >
-                  <Metric
-                    title="Confidence"
-                    value={`${(
-                      ranking.confidence *
-                      100
-                    ).toFixed(
-                      1,
-                    )}%`}
-                  />
-
-                  <Metric
-                    title="Reliability"
-                    value="Pending"
-                  />
-
-                  <Metric
-                    title="Binding Affinity"
-                    value="N/A"
-                  />
-
-                  <Metric
-                    title="AI Score"
-                    value={`${ranking.score}`}
-                  />
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, textTransform: "uppercase", color: "var(--color-smoke)" }}>
+                    Composite Score
+                  </span>
+                  <h1
+                    style={{
+                      fontSize: 40,
+                      fontWeight: 400,
+                      color: "var(--color-obsidian)",
+                      letterSpacing: "-0.4px",
+                      marginTop: 4,
+                    }}
+                  >
+                    {ranking.score.toFixed(2)}
+                  </h1>
                 </div>
               </div>
-            ),
-          )}
+
+              {/* Leaderboard Metrics Box */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gap: 16,
+                  marginTop: 32,
+                  borderTop: "1px solid var(--color-bone)",
+                  paddingTop: 24,
+                }}
+              >
+                <Metric
+                  title="Confidence"
+                  value={ranking.confidence > 1.0 ? `${ranking.confidence.toFixed(1)}%` : `${(ranking.confidence * 100).toFixed(1)}%`}
+                />
+
+                <Metric
+                  title="Reliability"
+                  value={ranking.reliability ? (ranking.reliability > 1.0 ? `${ranking.reliability.toFixed(1)}%` : `${(ranking.reliability * 100).toFixed(1)}%`) : "Pending"}
+                />
+
+                <Metric
+                  title="Binding Affinity"
+                  value={ranking.affinity ? `${ranking.affinity.toFixed(4)}` : "N/A"}
+                />
+
+                <Metric
+                  title="AI Score"
+                  value={`${ranking.score.toFixed(2)}`}
+                />
+              </div>
+            </div>
+          ))}
         </div>
+      )}
+
+      {selectedSmiles && (
+        <MoleculeViewer3D
+          smiles={selectedSmiles}
+          onClose={() => setSelectedSmiles(null)}
+        />
       )}
     </div>
   );
@@ -480,16 +404,18 @@ function Metric({
   return (
     <div
       style={{
-        padding: 18,
-        borderRadius: 18,
-        background:
-          "rgba(255,255,255,0.03)",
+        padding: "16px 20px",
+        borderRadius: "var(--radius-nested-cards)",
+        background: "var(--surface-bone)",
+        border: "1px solid var(--color-pale-stone)",
       }}
     >
       <p
         style={{
-          color: "#94A3B8",
-          fontSize: 14,
+          color: "var(--color-graphite)",
+          fontSize: 11,
+          fontFamily: "var(--font-mono)",
+          textTransform: "uppercase",
         }}
       >
         {title}
@@ -497,8 +423,10 @@ function Metric({
 
       <h3
         style={{
-          marginTop: 10,
-          fontSize: 24,
+          marginTop: 8,
+          fontSize: 20,
+          fontWeight: 400,
+          color: "var(--color-obsidian)",
         }}
       >
         {value}

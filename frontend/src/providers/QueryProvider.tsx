@@ -7,7 +7,7 @@ import {
     ReactQueryDevtools,
 } from "@tanstack/react-query-devtools";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type QueryProviderProps = {
     children: ReactNode;

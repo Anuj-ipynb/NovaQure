@@ -7,8 +7,10 @@ export function useRunPipeline() {
   return useMutation({
     mutationFn: (params: PipelineParams) => runPipeline(params),
     onSuccess: () => {
-      // Invalidate queries to reload dynamic molecule lists
+      // Invalidate queries to reload dynamic molecule, experiment, and ranking lists
       queryClient.invalidateQueries({ queryKey: ["molecules"] });
+      queryClient.invalidateQueries({ queryKey: ["rankings"] });
+      queryClient.invalidateQueries({ queryKey: ["experiments"] });
     }
   });
 }

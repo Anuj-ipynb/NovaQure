@@ -53,6 +53,28 @@ def create_molecule(
         )
 
 
+def _map_molecule_response(mol) -> dict:
+    eval_dict = None
+    if mol.evaluation:
+        eval_dict = {
+            "qed": mol.evaluation.qed,
+            "sa_score": mol.evaluation.sa_score,
+            "affinity": mol.evaluation.binding_affinity,
+            "lipinski_pass": mol.evaluation.lipinski_pass,
+        }
+
+    return {
+        "id": mol.id,
+        "experiment_id": mol.experiment_id,
+        "smiles": mol.smiles,
+        "selfies": mol.selfies,
+        "score": mol.score,
+        "created_at": mol.created_at,
+        "updated_at": mol.updated_at,
+        "evaluation": eval_dict,
+    }
+
+
 # ---------------------------------------------------------
 # List Molecules
 # ---------------------------------------------------------
@@ -68,7 +90,8 @@ def list_molecules(
     ],
 ):
 
-    return service.list_molecules()
+    molecules = service.list_molecules()
+    return [_map_molecule_response(m) for m in molecules]
 
 
 # ---------------------------------------------------------
@@ -98,7 +121,7 @@ def get_molecule(
             detail="Molecule not found.",
         )
 
-    return molecule
+    return _map_molecule_response(molecule)
 
 
 # ---------------------------------------------------------

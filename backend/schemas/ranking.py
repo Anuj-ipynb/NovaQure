@@ -91,6 +91,13 @@ class RankingResponse(TimestampSchema):
 
     confidence: float
 
+    smiles: Optional[str] = None
+    
+    reliability: Optional[float] = None
+    
+    affinity: Optional[float] = None
+
+
 
 # ---------------------------------------------------------
 # Ranking Summary

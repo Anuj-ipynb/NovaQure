@@ -1,8 +1,8 @@
 import {
   useEffect,
   useState,
-  ReactNode,
 } from "react";
+import type { ReactNode } from "react";
 
 import { AuthContext } from "./AuthContext";
 

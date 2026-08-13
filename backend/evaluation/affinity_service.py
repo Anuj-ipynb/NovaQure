@@ -47,15 +47,20 @@ class AffinityService:
     # Locate Model
     # ---------------------------------------------------------
 
-    def _find_model(self) -> Path | None:
+    def _find_model(self, target_protein: str | None = None) -> Path | None:
         """
-        Locate the trained Chemprop model.
+        Locate the trained Chemprop model for a specific target protein or default.
         """
-        # Explicitly look for the model at the path established in config
-        from backend.configs.chemprop_config import MODEL_PATH
+        from backend.configs.chemprop_config import MODEL_DIRECTORY, MODEL_PATH
+
+        if target_protein:
+            target_model = MODEL_DIRECTORY / f"{target_protein.lower()}_model.pt"
+            if target_model.exists():
+                logger.info("Using target-specific Chemprop model: %s", target_model)
+                return target_model
 
         if MODEL_PATH.exists():
-             logger.info("Using Chemprop model: %s", MODEL_PATH)
+             logger.info("Using default Chemprop model: %s", MODEL_PATH)
              return MODEL_PATH
 
         logger.warning("No trained Chemprop model (best.pt) found at %s. Fallback mode enabled.", MODEL_PATH)
@@ -121,6 +126,18 @@ class AffinityService:
         ]
 
         try:
+            import os
+            # Ensure the virtual environment's bin/Scripts folder is in PATH for the subprocess
+            env = os.environ.copy()
+            project_root = Path(__file__).resolve().parents[2]
+            venv_scripts = str(project_root / "venv" / "Scripts")
+            env["PATH"] = venv_scripts + os.pathsep + env.get("PATH", "")
+            
+            # Resolve the absolute path to chemprop.exe if running in Windows venv
+            chemprop_exe = project_root / "venv" / "Scripts" / "chemprop.exe"
+            if chemprop_exe.exists():
+                command[0] = str(chemprop_exe)
+
             # capture_output=True keeps production API streams clean of recurring PyTorch
             # and Lightning optimization alerts during fast evaluation cycles.
             subprocess.run(
@@ -128,6 +145,7 @@ class AffinityService:
                 check=True,
                 capture_output=True,
                 text=True,
+                env=env,
             )
         except subprocess.CalledProcessError as exc:
             logger.error("Chemprop prediction execution failed.")

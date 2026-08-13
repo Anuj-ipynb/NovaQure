@@ -79,9 +79,79 @@ class AMDEService:
 
         confidence = round(sum(a.score for a in assessments) / len(assessments), 2)
 
+        # Step 4: Optional Live LLM Insight (Non-blocking fallback)
+        llm_result = self._try_llm_reasoning(comp, decision, reason)
+        if llm_result:
+            model_name, rec_text = llm_result
+            thoughts_and_actions.append(f"Thought (LLM Agent - {model_name}): {rec_text}")
+            llm_recommendation = rec_text
+        else:
+            llm_recommendation = None
+
         return {
             "decision": decision,
             "reason": reason,
             "confidence": confidence,
+            "recommendation": llm_recommendation or "Maintain structure and evaluate binding stability.",
             "thoughts": thoughts_and_actions  # Preserving metadata
         }
+
+    def _try_llm_reasoning(self, comp: Dict, decision: str, reason: str) -> tuple[str, str] | None:
+        """
+        Queries the configured LLM provider (NVIDIA Nemotron API or local Ollama)
+        for qualitative chemical optimization advice. Times out in 1.5s to ensure fast pipeline runs.
+        """
+        try:
+            import urllib.request
+            import json
+            from backend.configs.llm_config import get_active_llm_info, NVIDIA_API_KEY
+
+            info = get_active_llm_info()
+            smiles = comp.get("smiles", "unknown structure")
+            prompt = (
+                f"As a medicinal chemist, give a 1-sentence recommendation for molecule '{smiles}'. "
+                f"Current evaluation decision: {decision} due to {reason}."
+            )
+
+            if info["type"] == "nvidia":
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {NVIDIA_API_KEY}"
+                }
+                body = {
+                    "model": info["model"],
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 60,
+                    "temperature": 0.2
+                }
+                req = urllib.request.Request(
+                    info["endpoint"],
+                    data=json.dumps(body).encode("utf-8"),
+                    headers=headers,
+                    method="POST"
+                )
+                with urllib.request.urlopen(req, timeout=1.5) as response:
+                    if response.status == 200:
+                        data = json.loads(response.read().decode("utf-8"))
+                        text = data["choices"][0]["message"]["content"].strip()
+                        return info["model"], text
+
+            elif info["type"] == "ollama":
+                headers = {"Content-Type": "application/json"}
+                body = {"model": info["model"], "prompt": prompt, "stream": False}
+                req = urllib.request.Request(
+                    info["endpoint"],
+                    data=json.dumps(body).encode("utf-8"),
+                    headers=headers,
+                    method="POST"
+                )
+                with urllib.request.urlopen(req, timeout=1.5) as response:
+                    if response.status == 200:
+                        data = json.loads(response.read().decode("utf-8"))
+                        text = data.get("response", "").strip()
+                        return info["model"], text
+        except Exception:
+            # Silent fallback to deterministic execution engine when LLM endpoint is unreachable
+            pass
+        return None
+
