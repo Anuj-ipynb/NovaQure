@@ -31,10 +31,12 @@ class RankingService:
     def compute_score(self, mol: MoleculeScore) -> Dict:
         affinity_score = self.normalize_affinity(mol.affinity)
         reliability_norm = mol.reliability / 100.0 if mol.reliability > 1.0 else mol.reliability
+        # Invert SA: lower SA (1=easy) is better → higher contribution
+        sa_norm = max(0.0, 1.0 - (mol.sa - 1.0) / 9.0)
 
         final_score = (
             mol.qed * self.weights["qed"] +
-            mol.sa * self.weights["sa"] +
+            sa_norm * self.weights["sa"] +
             affinity_score * self.weights["affinity"] +
             reliability_norm * self.weights["reliability"]
         )

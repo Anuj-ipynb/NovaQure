@@ -6,6 +6,9 @@ from backend.generation.embedding_encoder import (
 from backend.generation.jtvae_service import (
     JTVAEEncoder,
 )
+from backend.generation.variational_jtvae import (
+    VariationalJTVAE,
+)
 
 from backend.generation.generation_config import (
     GenerationConfig,
@@ -19,6 +22,7 @@ class EncoderService:
         self._encoders = {
             "embedding": EmbeddingEncoder(),
             "jtvae": JTVAEEncoder(),
+            "vjtv": VariationalJTVAE(),
         }
 
     def register_encoder(

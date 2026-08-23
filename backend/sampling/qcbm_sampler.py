@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import os
 import numpy as np
 import pennylane as qml
 
@@ -15,6 +17,8 @@ from backend.sampling.base_sampler import (
     BaseSampler
 )
 
+logger = logging.getLogger(__name__)
+
 
 class QCBMSampler(
     BaseSampler
@@ -24,7 +28,12 @@ class QCBMSampler(
 
     Uses an 8-qubit parameterized quantum circuit to perform quantum-inspired
     perturbation and sampling in the latent space.
+
+    The circuit parameters can be trained via ``train()`` to match a target
+    latent distribution, or left at their defaults for deterministic sampling.
     """
+
+    DEFAULT_WEIGHTS_PATH = "models/qcbm_weights.npy"
 
     def __init__(self):
         # Create an 8-qubit quantum simulator device
@@ -47,8 +56,120 @@ class QCBMSampler(
             return [qml.expval(qml.PauliZ(i)) for i in range(self.num_qubits)]
 
         self.circuit = _circuit
-        # Static weights for deterministic quantum sampling
+        # Default weights (used if no trained checkpoint is loaded)
         self.weights = np.array([np.pi / 4] * self.num_qubits)
+        self._trained = False
+
+        # Auto-load trained weights if available
+        if os.path.exists(self.DEFAULT_WEIGHTS_PATH):
+            self.load_weights(self.DEFAULT_WEIGHTS_PATH)
+
+    # -----------------------------------------------------------------
+    # Training
+    # -----------------------------------------------------------------
+
+    def train(
+        self,
+        target_vectors: np.ndarray,
+        epochs: int = 100,
+        lr: float = 0.1,
+    ) -> list[float]:
+        """Train circuit parameters to match a target latent distribution.
+
+        Uses Maximum Mean Discrepancy (MMD) with RBF kernel as the loss
+        function, optimised via PennyLane's AdamOptimizer.
+
+        Parameters
+        ----------
+        target_vectors : np.ndarray
+            Array of shape ``(N, D)`` containing latent vectors from the
+            encoder.  Only the first ``num_qubits`` dimensions of each
+            vector are used per chunk.
+        epochs : int
+            Number of optimisation steps.
+        lr : float
+            Learning rate for Adam.
+
+        Returns
+        -------
+        list[float]
+            Loss values per epoch.
+        """
+        # Prepare target chunks (take first num_qubits dims, clip to [-1,1])
+        targets = np.array(target_vectors, dtype=float)
+        if targets.ndim == 1:
+            targets = targets.reshape(1, -1)
+        # Use first num_qubits columns
+        target_chunks = np.clip(targets[:, :self.num_qubits], -1.0, 1.0)
+
+        # Trainable parameters
+        params = np.array(self.weights, requires_grad=True)
+        opt = qml.AdamOptimizer(stepsize=lr)
+
+        def rbf_kernel(x, y, sigma=1.0):
+            """Radial basis function kernel."""
+            diff = x - y
+            return np.exp(-np.dot(diff, diff) / (2.0 * sigma ** 2))
+
+        def mmd_loss(weights):
+            """Maximum Mean Discrepancy between circuit outputs and targets."""
+            # Sample circuit outputs for a subset of targets
+            n_samples = min(len(target_chunks), 32)
+            indices = np.random.choice(len(target_chunks), n_samples, replace=False)
+
+            circuit_outputs = []
+            for idx in indices:
+                inputs = target_chunks[idx] * np.pi
+                out = np.array(self.circuit(inputs, weights))
+                circuit_outputs.append(out)
+
+            # Compute MMD components
+            loss = 0.0
+            for i in range(n_samples):
+                for j in range(n_samples):
+                    loss += rbf_kernel(circuit_outputs[i], circuit_outputs[j])
+                    loss += rbf_kernel(target_chunks[indices[i]], target_chunks[indices[j]])
+                    loss -= 2.0 * rbf_kernel(circuit_outputs[i], target_chunks[indices[j]])
+            loss = loss / (n_samples ** 2)
+            return loss
+
+        losses = []
+        for epoch in range(epochs):
+            params, loss_val = opt.step_and_cost(mmd_loss, params)
+            losses.append(float(loss_val))
+            if (epoch + 1) % 10 == 0 or epoch == 0:
+                logger.info("QCBM train epoch %d/%d — MMD loss: %.6f", epoch + 1, epochs, float(loss_val))
+
+        self.weights = np.array(params, requires_grad=False)
+        self._trained = True
+        logger.info("QCBM training complete. Final loss: %.6f", losses[-1])
+        return losses
+
+    # -----------------------------------------------------------------
+    # Weight persistence
+    # -----------------------------------------------------------------
+
+    def save_weights(self, path: str | None = None) -> str:
+        """Save trained circuit parameters to a .npy file."""
+        path = path or self.DEFAULT_WEIGHTS_PATH
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        np.save(path, self.weights)
+        logger.info("QCBM weights saved to %s", path)
+        return path
+
+    def load_weights(self, path: str | None = None) -> None:
+        """Load circuit parameters from a .npy file."""
+        path = path or self.DEFAULT_WEIGHTS_PATH
+        if not os.path.exists(path):
+            logger.warning("QCBM weights file not found: %s", path)
+            return
+        self.weights = np.load(path)
+        self._trained = True
+        logger.info("QCBM weights loaded from %s", path)
+
+    # -----------------------------------------------------------------
+    # Sampling (unchanged API)
+    # -----------------------------------------------------------------
 
     def sample(
         self,
@@ -92,4 +213,3 @@ class QCBMSampler(
             .normalize()
             .to_list()
         )
-
