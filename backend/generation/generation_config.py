@@ -3,10 +3,10 @@ from pathlib import Path
 
 class GenerationConfig:
 
-    DATASET_NAME = "sample"
+    DATASET_NAME = "chembl_egfr"
 
     DATASET_PATH = Path(
-        "datasets/raw/sample_smiles.csv"
+        "datasets/external/chembl/processed/EGFR.csv"
     )
 
     OUTPUT_DIR = Path(
@@ -23,7 +23,7 @@ class GenerationConfig:
         "experiment_metadata.json"
     )
 
-    MAX_MOLECULES = 100
+    MAX_MOLECULES = 5
 
     EXPORT_LATENT_VECTORS = False
 

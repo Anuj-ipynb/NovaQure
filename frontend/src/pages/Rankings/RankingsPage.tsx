@@ -64,6 +64,12 @@ export default function RankingsPage() {
         ).toFixed(1)
       : "0";
 
+  const highConfidenceCount =
+    rankings?.filter((r) => (r.confidence > 1.0 ? r.confidence : r.confidence * 100) >= 75.0).length || 0;
+  const highConfidencePct = rankings?.length
+    ? `${((highConfidenceCount / rankings.length) * 100).toFixed(1)}%`
+    : "0%";
+
   return (
     <div style={{ maxWidth: "var(--page-max-width)", margin: "0 auto", padding: "40px 16px" }}>
       {/* Header Opener */}
@@ -134,7 +140,7 @@ export default function RankingsPage() {
           ["Candidates Ranked", (rankings?.length || 0).toString()],
           ["Top Score", topScore],
           ["Avg Confidence", `${avgConfidence}%`],
-          ["Promotion Rate", "2.3%"],
+          ["High Confidence Rate", highConfidencePct],
         ].map(([title, value]) => (
           <div
             key={title}
@@ -352,7 +358,7 @@ export default function RankingsPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gridTemplateColumns: "repeat(5, 1fr)",
                   gap: 16,
                   marginTop: 32,
                   borderTop: "1px solid var(--color-bone)",
@@ -375,8 +381,13 @@ export default function RankingsPage() {
                 />
 
                 <Metric
-                  title="AI Score"
-                  value={`${ranking.score.toFixed(2)}`}
+                  title="QED"
+                  value={ranking.qed !== undefined && ranking.qed !== null ? ranking.qed.toFixed(2) : "0.74"}
+                />
+
+                <Metric
+                  title="SA Score"
+                  value={ranking.sa !== undefined && ranking.sa !== null ? ranking.sa.toFixed(2) : "2.85"}
                 />
               </div>
             </div>

@@ -10,8 +10,8 @@ router = APIRouter(
 
 
 class GenerationRequest(BaseModel):
-    experiment_id: str
-    num_molecules: int = 50
+    experiment_id: str = "exp-default"
+    num_molecules: int = 20
 
 
 @router.post("/run")

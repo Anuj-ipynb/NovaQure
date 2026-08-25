@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import * as $3Dmol from "3dmol";
+import { smilesToXYZ } from "../../utils/smilesTo3D";
 
 interface MoleculeViewer3DProps {
   smiles: string;
@@ -6,97 +8,61 @@ interface MoleculeViewer3DProps {
 }
 
 export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const viewerRef = useRef<any>(null);
+  const [styleMode, setStyleMode] = useState<"stick" | "ball" | "sphere">("ball");
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!containerRef.current) return;
 
-    let animationFrameId: number;
-    let angle = 0;
+    try {
+      containerRef.current.innerHTML = "";
 
-    // Generate pseudo-3D atom coordinates based on SMILES characters
-    const atoms = Array.from(smiles).map((char, index) => {
-      const theta = (index / Math.max(1, smiles.length)) * Math.PI * 2;
-      const phi = (index / Math.max(1, smiles.length)) * Math.PI;
-      const r = 80 + (index % 3) * 15;
-      
-      let color = "#a8927c"; // Warm Sandstone
-      if (char === "C") color = "#212121"; // Carbon Charcoal
-      else if (char === "O") color = "#EF4444"; // Oxygen Red
-      else if (char === "N") color = "#3B82F6"; // Nitrogen Blue
-      else if (char === "F" || char === "Cl" || char === "Br") color = "#10B981"; // Halogen Green
-
-      return {
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.sin(phi) * Math.sin(theta),
-        z: r * Math.cos(phi),
-        element: char,
-        color,
-      };
-    });
-
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      angle += 0.015;
-
-      const cosA = Math.cos(angle);
-      const sinA = Math.sin(angle);
-
-      // Project 3D points to 2D canvas
-      const projected = atoms.map((atom) => {
-        const x1 = atom.x * cosA - atom.z * sinA;
-        const z1 = atom.x * sinA + atom.z * cosA;
-        const scale = 250 / (250 + z1);
-        const x2 = canvas.width / 2 + x1 * scale;
-        const y2 = canvas.height / 2 + atom.y * scale;
-
-        return { ...atom, px: x2, py: y2, scale, z1 };
+      const viewer = $3Dmol.createViewer(containerRef.current, {
+        backgroundColor: "rgb(13, 19, 31)"
       });
+      viewerRef.current = viewer;
 
-      // Sort by depth (z1) for proper rendering order
-      projected.sort((a, b) => b.z1 - a.z1);
+      const xyzData = smilesToXYZ(smiles);
+      viewer.addModel(xyzData, "xyz");
 
-      // Draw chemical bonds (lines between consecutive atoms)
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "rgba(168, 146, 124, 0.4)";
-      for (let i = 0; i < projected.length - 1; i++) {
-        ctx.beginPath();
-        ctx.moveTo(projected[i].px, projected[i].py);
-        ctx.lineTo(projected[i + 1].px, projected[i + 1].py);
-        ctx.stroke();
-      }
-
-      // Draw 3D atom spheres
-      projected.forEach((atom) => {
-        const radius = Math.max(6, 12 * atom.scale);
-        ctx.beginPath();
-        ctx.arc(atom.px, atom.py, radius, 0, Math.PI * 2);
-        ctx.fillStyle = atom.color;
-        ctx.fill();
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = "#ffffff";
-        ctx.stroke();
-
-        // Atom label
-        ctx.fillStyle = "#ffffff";
-        ctx.font = `${Math.max(10, Math.floor(12 * atom.scale))}px monospace`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(atom.element, atom.px, atom.py);
-      });
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
+      applyStyle(viewer, styleMode);
+      viewer.zoomTo();
+      viewer.render();
+      viewer.spin("y", 0.6);
+    } catch (err) {
+      console.error("3Dmol modal render error:", err);
+    }
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (viewerRef.current) {
+        try {
+          viewerRef.current.clear();
+        } catch {
+          // Cleanup error handling
+        }
+      }
     };
   }, [smiles]);
+
+  const applyStyle = (viewer: any, mode: string) => {
+    if (!viewer) return;
+
+    if (mode === "stick") {
+      viewer.setStyle({}, { stick: { radius: 0.18 } });
+    } else if (mode === "sphere") {
+      viewer.setStyle({}, { sphere: { scale: 0.5 } });
+    } else {
+      // Ball and stick default
+      viewer.setStyle({}, { stick: { radius: 0.15 }, sphere: { scale: 0.3 } });
+    }
+    viewer.render();
+  };
+
+  const handleStyleChange = (mode: "stick" | "ball" | "sphere") => {
+    setStyleMode(mode);
+    applyStyle(viewerRef.current, mode);
+  };
 
   return (
     <div
@@ -114,45 +80,95 @@ export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DPr
     >
       <div
         style={{
-          background: "var(--surface-canvas)",
-          borderRadius: "var(--radius-cards)",
+          background: "#0d131f",
+          borderRadius: 24,
           padding: 32,
-          maxWidth: 540,
+          maxWidth: 640,
           width: "90%",
-          border: "1px solid var(--color-pale-stone)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
           textAlign: "center",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.5)"
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, textTransform: "uppercase", color: "var(--color-warm-sandstone)" }}>
-            3D Molecular Conformation
-          </span>
+          <div>
+            <span style={{ fontFamily: "monospace", fontSize: 11, textTransform: "uppercase", color: "#10b981", letterSpacing: 0.5 }}>
+              3D WebGL Conformer
+            </span>
+            <h2 style={{ fontSize: 20, color: "#f8fafc", margin: "4px 0 0 0", fontWeight: 600 }}>
+              Molecular Spatial Conformation
+            </h2>
+          </div>
+
           <button
             onClick={onClose}
             style={{
-              background: "none",
-              border: "1px solid var(--color-silhouette)",
-              borderRadius: "var(--radius-buttons)",
-              padding: "4px 12px",
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: 10,
+              padding: "6px 16px",
               cursor: "pointer",
-              fontFamily: "var(--font-aeonik)",
-              fontSize: 14,
+              color: "#f1f5f9",
+              fontSize: 13,
+              fontWeight: 600,
             }}
           >
-            Close
+            ✕ Close
           </button>
         </div>
 
-        <canvas ref={canvasRef} width={450} height={320} style={{ borderRadius: 12, background: "var(--surface-soft-mist)" }} />
+        {/* 3D WebGL Canvas */}
+        <div
+          ref={containerRef}
+          style={{
+            width: "100%",
+            height: 360,
+            borderRadius: 16,
+            overflow: "hidden",
+            border: "1px solid rgba(255, 255, 255, 0.05)",
+            position: "relative"
+          }}
+        />
 
-        <div style={{ marginTop: 20, textAlign: "left" }}>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--color-graphite)" }}>
-            SMILES Specification:
-          </p>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 16, marginTop: 4, color: "var(--color-obsidian)", wordBreak: "break-all" }}>
+        {/* Display Controls & Style Selector */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            {(["ball", "stick", "sphere"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => handleStyleChange(m)}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  background: styleMode === m ? "#10b981" : "rgba(255, 255, 255, 0.03)",
+                  color: styleMode === m ? "#ffffff" : "#94a3b8",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textTransform: "capitalize",
+                  cursor: "pointer"
+                }}
+              >
+                {m === "ball" ? "Ball & Stick" : m}
+              </button>
+            ))}
+          </div>
+
+          <span style={{ fontSize: 12, color: "#64748b", fontFamily: "monospace" }}>
+            Drag to Rotate • Scroll to Zoom
+          </span>
+        </div>
+
+        {/* SMILES text */}
+        <div style={{ marginTop: 20, textAlign: "left", background: "rgba(255, 255, 255, 0.02)", padding: 16, borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.04)" }}>
+          <div style={{ fontFamily: "monospace", fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>
+            SMILES Structural Representation:
+          </div>
+          <div style={{ fontFamily: "monospace", fontSize: 14, marginTop: 4, color: "#f1f5f9", wordBreak: "break-all" }}>
             {smiles}
-          </p>
+          </div>
         </div>
       </div>
     </div>

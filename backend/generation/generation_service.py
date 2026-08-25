@@ -50,11 +50,13 @@ class GenerationService:
 
         start_time = time.perf_counter()
 
-        smiles = load_smiles_dataset(
+        raw_smiles = load_smiles_dataset(
             str(
                 GenerationConfig.DATASET_PATH
             )
         )
+
+        subset = raw_smiles[: GenerationConfig.MAX_MOLECULES * 2]
 
         smiles = [
 
@@ -62,7 +64,7 @@ class GenerationService:
                 smile
             )
 
-            for smile in smiles
+            for smile in subset
 
         ]
 

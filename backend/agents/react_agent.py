@@ -102,11 +102,18 @@ def _try_build_langchain_agent():
             tool_funcs.append(make_tool_func(t))
 
         if info["type"] == "ollama":
-            from langchain_community.chat_models import ChatOllama
+            try:
+                from langchain_ollama import ChatOllama
+            except ImportError:
+                try:
+                    from langchain_community.chat_models.ollama import ChatOllama
+                except ImportError:
+                    from langchain_community.chat_models import ChatOllama
+
             model = ChatOllama(
                 model=info["model"],
                 base_url=info["endpoint"].replace("/api/generate", ""),
-                timeout=10,
+                timeout=15,
             )
         elif info["type"] == "nvidia":
             # Use model string format for NVIDIA

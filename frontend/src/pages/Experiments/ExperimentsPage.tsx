@@ -246,14 +246,7 @@ export default function ExperimentsPage() {
 
       {/* Main Grid */}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "2fr 1fr",
-          gap: 24,
-        }}
-      >
+      <div>
         {/* Experiment Table */}
 
         <div
@@ -299,7 +292,7 @@ export default function ExperimentsPage() {
                     ID
                   </th>
                   <th align="left">
-                    Protein
+                    Protein Target
                   </th>
                   <th align="left">
                     Iterations
@@ -318,17 +311,18 @@ export default function ExperimentsPage() {
                         exp.id
                       }
                       style={{
-                        height: 90,
+                        height: 70,
+                        borderBottom: "1px solid rgba(255,255,255,0.05)",
                       }}
                     >
-                      <td>
+                      <td style={{ fontFamily: "monospace" }}>
                         {exp.id.slice(
                           0,
-                          8,
-                        )}
+                          12,
+                        )}...
                       </td>
 
-                      <td>
+                      <td style={{ fontWeight: 600 }}>
                         {
                           exp.target_protein
                         }
@@ -346,7 +340,7 @@ export default function ExperimentsPage() {
                             display:
                               "inline-block",
                             padding:
-                              "8px 14px",
+                              "6px 14px",
                             borderRadius:
                               999,
                             background:
@@ -357,6 +351,16 @@ export default function ExperimentsPage() {
                                   "completed"
                                 ? "rgba(99,102,241,0.2)"
                                 : "rgba(251,191,36,0.2)",
+                            color:
+                              exp.status ===
+                              "running"
+                                ? "#34D399"
+                                : exp.status ===
+                                  "completed"
+                                ? "#818CF8"
+                                : "#FBBF24",
+                            fontSize: 13,
+                            fontWeight: 600,
                           }}
                         >
                           {
@@ -371,84 +375,7 @@ export default function ExperimentsPage() {
             </table>
           )}
         </div>
-
-        {/* Right Panel */}
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection:
-              "column",
-            gap: 24,
-          }}
-        >
-          <MetricCard
-            title="GPU Cluster"
-            value="71%"
-            subtitle="Utilization"
-            color="#06B6D4"
-          />
-
-          <MetricCard
-            title="Quantum Nodes"
-            value="2 / 4"
-            subtitle="Nodes Active"
-            color="#8B5CF6"
-          />
-
-          <MetricCard
-            title="AI Agents"
-            value="3"
-            subtitle="Agents Online"
-            color="#10B981"
-          />
-        </div>
       </div>
-    </div>
-  );
-}
-
-function MetricCard({
-  title,
-  value,
-  subtitle,
-  color,
-}: {
-  title: string;
-  value: string;
-  subtitle: string;
-  color: string;
-}) {
-  return (
-    <div
-      style={{
-        background:
-          "rgba(255,255,255,0.05)",
-        borderRadius: 28,
-        padding: 28,
-        border:
-          "1px solid rgba(255,255,255,0.08)",
-      }}
-    >
-      <h2>{title}</h2>
-
-      <h1
-        style={{
-          fontSize: 48,
-          marginTop: 20,
-          color,
-        }}
-      >
-        {value}
-      </h1>
-
-      <p
-        style={{
-          color: "#94A3B8",
-        }}
-      >
-        {subtitle}
-      </p>
     </div>
   );
 }

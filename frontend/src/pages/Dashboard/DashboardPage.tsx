@@ -11,32 +11,36 @@ export default function DashboardPage() {
   const { data: rankings } = useQuery({ queryKey: ["rankings"], queryFn: getRankings });
 
   const totalMolecules = molecules?.length || rankings?.length || 0;
-  const activeProjects = projects?.length || 1;
-  const activeExperiments = experiments?.length || 1;
+  const activeProjects = projects?.length || 0;
+  const activeExperiments = experiments?.length || 0;
   
-  const avgReliability = rankings?.length
-    ? (rankings.reduce((sum, item) => sum + (item.reliability ? (item.reliability > 1.0 ? item.reliability : item.reliability * 100) : 90.7), 0) / rankings.length).toFixed(1)
-    : "90.7";
+  const validReliabilities = rankings
+    ?.map((item) => (item.reliability ? (item.reliability > 1.0 ? item.reliability : item.reliability * 100) : item.confidence > 1.0 ? item.confidence : item.confidence * 100))
+    .filter((v) => v > 0);
+
+  const avgReliability = validReliabilities && validReliabilities.length > 0
+    ? (validReliabilities.reduce((sum, v) => sum + v, 0) / validReliabilities.length).toFixed(1)
+    : null;
 
   const stats = [
     {
       title: "Active Projects",
       value: activeProjects.toString(),
-      change: "Live DB",
+      change: "Target Workspaces",
     },
     {
       title: "Experiments Executed",
       value: activeExperiments.toString(),
-      change: "Live DB",
+      change: "Optimisation Runs",
     },
     {
       title: "Generated Molecules",
       value: totalMolecules.toString(),
-      change: "Live DB",
+      change: "Screened Candidates",
     },
     {
       title: "Quantum Reliability",
-      value: `${avgReliability}%`,
+      value: avgReliability ? `${avgReliability}%` : "Pending",
       change: "ZNE Mitigated",
     },
   ];
@@ -172,10 +176,10 @@ export default function DashboardPage() {
                   </tr>
                 ))
               ) : (
-                <tr style={{ borderBottom: "1px solid var(--color-bone)" }}>
-                  <td style={{ padding: 16, fontFamily: "var(--font-mono)", fontSize: 13 }}>EXP-EGFR-01</td>
-                  <td style={{ padding: 16, fontWeight: 500 }}>EGFR</td>
-                  <td style={{ padding: 16, color: "var(--color-forest-sovereignty)" }}>Completed</td>
+                <tr>
+                  <td colSpan={3} style={{ padding: 24, textAlign: "center", color: "var(--color-graphite)", fontSize: 13, fontFamily: "var(--font-mono)" }}>
+                    No active experiments recorded yet. Execute a pipeline run to populate results.
+                  </td>
                 </tr>
               )}
             </tbody>

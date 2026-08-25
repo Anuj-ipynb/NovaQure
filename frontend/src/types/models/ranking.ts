@@ -9,5 +9,7 @@ export interface Ranking {
   smiles?: string;
   reliability?: number;
   affinity?: number;
+  qed?: number;
+  sa?: number;
 }
 
