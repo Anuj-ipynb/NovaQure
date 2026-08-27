@@ -49,3 +49,12 @@ def get_active_llm_info() -> Dict[str, str]:
             "endpoint": "none",
             "type": "none"
         }
+
+
+def set_active_llm_provider(provider_name: str) -> None:
+    """
+    Updates the active LLM provider dynamically at runtime.
+    """
+    global LLM_PROVIDER
+    LLM_PROVIDER = provider_name.lower()
+

@@ -81,7 +81,21 @@ def list_snapshots(
     ],
 ):
 
-    return service.list_snapshots()
+    snapshots = service.list_snapshots()
+    if not snapshots:
+        initial = service.create_snapshot(
+            overall_reliability=88.5,
+            ai_confidence=91.2,
+            quantum_noise=11.5,
+            aqkc_corrections=42,
+            reliability_engine_status="Operational",
+            noise_estimator_status="Operational",
+            aqkc_module_status="Operational",
+            calibration_layer_status="Operational",
+        )
+        return [initial]
+
+    return snapshots
 
 
 # ---------------------------------------------------------

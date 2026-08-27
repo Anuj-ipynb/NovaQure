@@ -1,49 +1,64 @@
 :root {
-  /* High-Contrast Colors */
+  /* Browserbase Design System — Colors */
+  --color-ink-black: #000000;
+  --color-paper-white: #ffffff;
+  --color-faint-slate: #f8fafc;
+  --color-lavender-mist: #e2e9f3;
+  --color-blue-gray-mist: #c5d3e8;
+  --color-cream-wash: #fffde6;
+  --color-sky-tint: #c4edff;
+  --color-graphite: #686562;
+  --color-signal-orange: #ff4500;
+
+  /* Legacy variable mappings for backward compatibility */
   --color-pure-white: #ffffff;
-  --color-obsidian: #f8fafc; /* High contrast primary text */
-  --color-soft-mist: #131b2e; /* Card surface */
-  --color-pale-stone: rgba(255, 255, 255, 0.12); /* Dividers & borders */
-  --color-bone: rgba(255, 255, 255, 0.05); /* Sub-containers */
-  --color-graphite: #94a3b8; /* Secondary description text */
-  --color-smoke: #cbd5e1; /* Subdued labels */
-  --color-charcoal: #1e293b; /* Button & tag fills */
-  --color-silhouette: rgba(255, 255, 255, 0.2);
-  --color-warm-sandstone: #f59e0b; /* Vibrant Amber/Gold accent */
-  --color-forest-sovereignty: #10b981; /* Emerald green accent */
+  --color-obsidian: #000000;
+  --color-soft-mist: #f8fafc;
+  --color-pale-stone: #e2e9f3;
+  --color-bone: #f8fafc;
+  --color-smoke: #686562;
+  --color-charcoal: #000000;
+  --color-silhouette: #e2e9f3;
+  --color-warm-sandstone: #ff4500;
+  --color-forest-sovereignty: #10b981;
   --color-dusty-iris: #8b5cf6;
   --color-slate-blue: #38bdf8;
 
   /* Typography — Font Families */
-  --font-aeonik: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-plain: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-gtplanar: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-gtstandardmono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-aeonik: var(--font-plain);
+  --font-mono: var(--font-gtstandardmono);
 
   /* Spacing */
   --spacing-4: 4px;
   --spacing-8: 8px;
   --spacing-12: 12px;
   --spacing-16: 16px;
-  --spacing-20: 20px;
   --spacing-24: 24px;
-  --spacing-28: 28px;
   --spacing-32: 32px;
   --spacing-40: 40px;
   --spacing-48: 48px;
 
   /* Layout */
-  --page-max-width: 1280px;
+  --page-max-width: 1200px;
 
   /* Radii */
-  --radius-cards: 16px;
-  --radius-buttons: 8px;
-  --radius-nested-cards: 12px;
-  --radius-feature-panels: 24px;
+  --radius-cards: 4px;
+  --radius-buttons: 50px;
+  --radius-nested-cards: 4px;
+  --radius-feature-panels: 4px;
+  --radius-full: 50px;
 
   /* Surfaces */
-  --surface-canvas: #090d16;
-  --surface-soft-mist: #131b2e;
-  --surface-pale-stone: rgba(255, 255, 255, 0.1);
-  --surface-bone: rgba(255, 255, 255, 0.05);
+  --surface-canvas: #ffffff;
+  --surface-paper-white: #ffffff;
+  --surface-faint-slate: #f8fafc;
+  --surface-lavender-mist: #e2e9f3;
+  --surface-blue-gray-mist: #c5d3e8;
+  --surface-soft-mist: #f8fafc;
+  --surface-pale-stone: #e2e9f3;
 }
 
 * {
@@ -54,8 +69,8 @@
 
 body {
   background: var(--surface-canvas);
-  color: var(--color-obsidian);
-  font-family: var(--font-aeonik);
+  color: var(--color-ink-black);
+  font-family: var(--font-plain);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -64,12 +79,14 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-silhouette);
-  border-radius: 20px;
+  background: #c5d3e8;
+  border-radius: 4px;
 }
-
-

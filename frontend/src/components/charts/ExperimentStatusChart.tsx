@@ -24,7 +24,18 @@ export default function ExperimentStatusChart({
   ).length;
 
   return (
-    <Plot
+    <div>
+      {/* Explanatory Caption Block */}
+      <div style={{ marginBottom: 16, padding: 12, borderRadius: 4, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 13, color: "#94A3B8", lineHeight: 1.4 }}>
+        <p style={{ margin: "0 0 4px 0", color: "#FFFFFF" }}>
+          <strong>📌 What this shows:</strong> Proportional breakdown of active, queued, and completed generative drug discovery experiments.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>💡 Why it's important:</strong> Monitors queue throughput and ensures zero execution bottlenecks across concurrent optimization runs.
+        </p>
+      </div>
+
+      <Plot
       data={[
         {
           type: "pie",
@@ -56,5 +67,6 @@ export default function ExperimentStatusChart({
         displaylogo: false,
       }}
     />
+    </div>
   );
 }

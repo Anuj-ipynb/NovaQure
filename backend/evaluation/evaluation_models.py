@@ -60,3 +60,8 @@ class EvaluationResult(BaseModel):
         ...,
         description="NQRE confidence score.",
     )
+
+    iupac_name: str = Field(
+        default="Unknown Candidate",
+        description="Official IUPAC chemical name.",
+    )

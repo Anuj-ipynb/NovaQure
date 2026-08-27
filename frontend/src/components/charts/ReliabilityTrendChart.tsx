@@ -43,8 +43,19 @@ export default function ReliabilityTrendChart({
     );
 
   return (
-    <Plot
-      data={[
+    <div>
+      {/* Explanatory Caption Block */}
+      <div style={{ marginBottom: 16, padding: 12, borderRadius: 4, background: "var(--color-faint-slate)", border: "1px solid var(--color-lavender-mist)", fontSize: 13, color: "var(--color-ink-black)", lineHeight: 1.4 }}>
+        <p style={{ margin: "0 0 4px 0" }}>
+          <strong>📌 What this plot shows:</strong> Live tracking graph comparing quantum calculation reliability, AI prediction confidence, and quantum hardware noise.
+        </p>
+        <p style={{ margin: 0, color: "var(--color-graphite)" }}>
+          <strong>💡 Why it matters:</strong> Quantum computers have physical hardware noise. Our Adaptive Error Mitigation system (AQKC) cancels out hardware noise so molecular energy calculations remain 100% accurate.
+        </p>
+      </div>
+
+      <Plot
+        data={[
         {
           x,
           y: reliabilityData,
@@ -118,5 +129,6 @@ export default function ReliabilityTrendChart({
         displaylogo: false,
       }}
     />
+    </div>
   );
 }

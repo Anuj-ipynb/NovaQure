@@ -11,5 +11,6 @@ export interface Ranking {
   affinity?: number;
   qed?: number;
   sa?: number;
+  iupac_name?: string;
 }
 

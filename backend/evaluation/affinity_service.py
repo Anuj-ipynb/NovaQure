@@ -127,8 +127,9 @@ class AffinityService:
 
         try:
             import os
-            # Ensure the virtual environment's bin/Scripts folder is in PATH for the subprocess
+            # Ensure the virtual environment's bin/Scripts folder is in PATH and KMP_DUPLICATE_LIB_OK is set for Windows PyTorch
             env = os.environ.copy()
+            env["KMP_DUPLICATE_LIB_OK"] = "TRUE"
             project_root = Path(__file__).resolve().parents[2]
             venv_scripts = str(project_root / "venv" / "Scripts")
             env["PATH"] = venv_scripts + os.pathsep + env.get("PATH", "")

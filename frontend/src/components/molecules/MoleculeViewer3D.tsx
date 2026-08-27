@@ -4,10 +4,11 @@ import { smilesToXYZ } from "../../utils/smilesTo3D";
 
 interface MoleculeViewer3DProps {
   smiles: string;
+  iupacName?: string;
   onClose: () => void;
 }
 
-export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DProps) {
+export default function MoleculeViewer3D({ smiles, iupacName, onClose }: MoleculeViewer3DProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<any>(null);
   const [styleMode, setStyleMode] = useState<"stick" | "ball" | "sphere">("ball");
@@ -19,7 +20,7 @@ export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DPr
       containerRef.current.innerHTML = "";
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
-        backgroundColor: "rgb(13, 19, 31)"
+        backgroundColor: "rgb(248, 250, 252)"
       });
       viewerRef.current = viewer;
 
@@ -29,7 +30,7 @@ export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DPr
       applyStyle(viewer, styleMode);
       viewer.zoomTo();
       viewer.render();
-      viewer.spin("y", 0.6);
+      viewer.spin("y", 0.5);
     } catch (err) {
       console.error("3Dmol modal render error:", err);
     }
@@ -53,7 +54,6 @@ export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DPr
     } else if (mode === "sphere") {
       viewer.setStyle({}, { sphere: { scale: 0.5 } });
     } else {
-      // Ball and stick default
       viewer.setStyle({}, { stick: { radius: 0.15 }, sphere: { scale: 0.3 } });
     }
     viewer.render();
@@ -69,8 +69,8 @@ export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DPr
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0, 0, 0, 0.85)",
-        backdropFilter: "blur(12px)",
+        background: "rgba(0, 0, 0, 0.4)",
+        backdropFilter: "blur(6px)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -80,38 +80,37 @@ export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DPr
     >
       <div
         style={{
-          background: "#0d131f",
-          borderRadius: 24,
-          padding: 32,
-          maxWidth: 640,
+          background: "var(--color-paper-white)",
+          borderRadius: "var(--radius-cards)",
+          padding: 28,
+          maxWidth: 600,
           width: "90%",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
+          border: "1px solid var(--color-lavender-mist)",
           textAlign: "center",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.5)"
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <div>
-            <span style={{ fontFamily: "monospace", fontSize: 11, textTransform: "uppercase", color: "#10b981", letterSpacing: 0.5 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ textAlign: "left" }}>
+            <span style={{ fontFamily: "var(--font-gtstandardmono)", fontSize: 11, textTransform: "uppercase", color: "var(--color-graphite)" }}>
               3D WebGL Conformer
             </span>
-            <h2 style={{ fontSize: 20, color: "#f8fafc", margin: "4px 0 0 0", fontWeight: 600 }}>
-              Molecular Spatial Conformation
+            <h2 style={{ fontSize: 18, color: "var(--color-ink-black)", margin: "2px 0 0 0", fontWeight: 600 }}>
+              {iupacName || "3D Spatial Conformation Model"}
             </h2>
           </div>
 
           <button
             onClick={onClose}
             style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: 10,
-              padding: "6px 16px",
+              background: "var(--color-ink-black)",
+              border: "none",
+              borderRadius: "var(--radius-full)",
+              padding: "6px 14px",
               cursor: "pointer",
-              color: "#f1f5f9",
-              fontSize: 13,
+              color: "var(--color-paper-white)",
+              fontSize: 12,
               fontWeight: 600,
             }}
           >
@@ -124,27 +123,27 @@ export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DPr
           ref={containerRef}
           style={{
             width: "100%",
-            height: 360,
-            borderRadius: 16,
+            height: 340,
+            borderRadius: 4,
             overflow: "hidden",
-            border: "1px solid rgba(255, 255, 255, 0.05)",
+            border: "1px solid var(--color-lavender-mist)",
             position: "relative"
           }}
         />
 
-        {/* Display Controls & Style Selector */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
-          <div style={{ display: "flex", gap: 8 }}>
+        {/* Controls & Style Selector */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
+          <div style={{ display: "flex", gap: 6 }}>
             {(["ball", "stick", "sphere"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => handleStyleChange(m)}
                 style={{
-                  padding: "6px 14px",
-                  borderRadius: 8,
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                  background: styleMode === m ? "#10b981" : "rgba(255, 255, 255, 0.03)",
-                  color: styleMode === m ? "#ffffff" : "#94a3b8",
+                  padding: "6px 12px",
+                  borderRadius: "var(--radius-full)",
+                  border: "1px solid var(--color-ink-black)",
+                  background: styleMode === m ? "var(--color-ink-black)" : "transparent",
+                  color: styleMode === m ? "var(--color-paper-white)" : "var(--color-ink-black)",
                   fontSize: 12,
                   fontWeight: 600,
                   textTransform: "capitalize",
@@ -156,17 +155,17 @@ export default function MoleculeViewer3D({ smiles, onClose }: MoleculeViewer3DPr
             ))}
           </div>
 
-          <span style={{ fontSize: 12, color: "#64748b", fontFamily: "monospace" }}>
+          <span style={{ fontSize: 11, color: "var(--color-graphite)", fontFamily: "var(--font-gtstandardmono)" }}>
             Drag to Rotate • Scroll to Zoom
           </span>
         </div>
 
         {/* SMILES text */}
-        <div style={{ marginTop: 20, textAlign: "left", background: "rgba(255, 255, 255, 0.02)", padding: 16, borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.04)" }}>
-          <div style={{ fontFamily: "monospace", fontSize: 11, color: "#64748b", textTransform: "uppercase" }}>
-            SMILES Structural Representation:
+        <div style={{ marginTop: 16, textAlign: "left", background: "var(--color-faint-slate)", padding: 12, borderRadius: 4, border: "1px solid var(--color-lavender-mist)" }}>
+          <div style={{ fontFamily: "var(--font-gtstandardmono)", fontSize: 11, color: "var(--color-graphite)", textTransform: "uppercase" }}>
+            SMILES Chemical Notation:
           </div>
-          <div style={{ fontFamily: "monospace", fontSize: 14, marginTop: 4, color: "#f1f5f9", wordBreak: "break-all" }}>
+          <div style={{ fontFamily: "var(--font-gtstandardmono)", fontSize: 13, marginTop: 2, color: "var(--color-ink-black)", wordBreak: "break-all" }}>
             {smiles}
           </div>
         </div>

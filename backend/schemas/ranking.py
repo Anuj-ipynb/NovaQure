@@ -97,6 +97,12 @@ class RankingResponse(TimestampSchema):
     
     affinity: Optional[float] = None
 
+    qed: Optional[float] = None
+
+    sa: Optional[float] = None
+
+    iupac_name: Optional[str] = None
+
 
 
 # ---------------------------------------------------------

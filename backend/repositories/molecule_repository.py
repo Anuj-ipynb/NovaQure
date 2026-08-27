@@ -42,6 +42,11 @@ class MoleculeRepository(BaseRepository[Molecule]):
     def list_molecules(
         self,
     ) -> list[Molecule]:
+        from backend.models.experiment import Experiment
+        latest_exp = self.db.query(Experiment.id).order_by(Experiment.created_at.desc()).first()
+        
+        if latest_exp and latest_exp[0]:
+            return self.get_by_experiment(latest_exp[0])
 
         return list(self.get_all())
 

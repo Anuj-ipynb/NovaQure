@@ -161,3 +161,10 @@ app.include_router(
     pipeline_router,
     prefix="/api/v1",
 )
+
+from backend.api.routes.config import router as config_router
+
+app.include_router(
+    config_router,
+    prefix="/api/v1",
+)
