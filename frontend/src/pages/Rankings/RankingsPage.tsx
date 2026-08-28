@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRankings } from "../../hooks/rankings/useRankings";
 import MoleculeViewer3D from "../../components/molecules/MoleculeViewer3D";
 import ParetoScatterChart from "../../components/charts/ParetoScatterChart";
+import Tooltip from "../../components/common/Tooltip";
 
 export default function RankingsPage() {
   const [selectedItem, setSelectedItem] = useState<{ smiles: string; iupacName?: string } | null>(null);
@@ -146,17 +147,9 @@ export default function RankingsPage() {
                       </span>
                     </div>
 
-                    <h2
-                      style={{
-                        fontSize: 18,
-                        fontWeight: 700,
-                        marginTop: 10,
-                        color: "var(--color-ink-black)",
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {ranking.iupac_name || "Novel EGFR Candidate"}
-                    </h2>
+                    <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--color-ink-black)", marginTop: 2 }}>
+                      {ranking.iupac_name || "Novel Targeted Bioactive Lead"}
+                    </h3>
                     <h3
                       style={{
                         fontFamily: "var(--font-gtstandardmono)",
@@ -200,11 +193,11 @@ export default function RankingsPage() {
                     paddingTop: 16,
                   }}
                 >
-                  <Metric title="Confidence" value={ranking.confidence > 1.0 ? `${ranking.confidence.toFixed(1)}%` : `${(ranking.confidence * 100).toFixed(1)}%`} />
-                  <Metric title="Reliability" value={relVal} />
-                  <Metric title="Binding Affinity" value={affVal} />
-                  <Metric title="QED Index" value={qedVal} />
-                  <Metric title="SA Score" value={saVal} />
+                  <Metric title="Confidence" value={ranking.confidence > 1.0 ? `${ranking.confidence.toFixed(1)}%` : `${(ranking.confidence * 100).toFixed(1)}%`} tooltip="NQRE Confidence Level: Reliability percentage derived from quantum error mitigation and wave-function convergence." />
+                  <Metric title="Reliability" value={relVal} tooltip="Quantum Trust Level: Overall platform confidence in quantum simulation accuracy." />
+                  <Metric title="Binding Affinity" value={affVal} tooltip="Binding Strength (pIC50): Higher is better. Values >= 8.0 indicate potent cancer inhibition." />
+                  <Metric title="QED Index" value={qedVal} tooltip="Drug-Likeness: Rated 0 to 1. Measures how easily the human body absorbs the drug without toxicity." />
+                  <Metric title="SA Score" value={saVal} tooltip="Synthetic Accessibility: Rated 1 to 10. Lower numbers mean chemists can synthesize the molecule faster in a lab." />
                 </div>
               </div>
             );
@@ -220,12 +213,20 @@ export default function RankingsPage() {
   );
 }
 
-function Metric({ title, value }: { title: string; value: string }) {
+function Metric({ title, value, tooltip }: { title: string; value: string; tooltip?: string }) {
   return (
     <div style={{ padding: 12, borderRadius: 4, background: "var(--color-faint-slate)", border: "1px solid var(--color-lavender-mist)" }}>
-      <p style={{ color: "var(--color-graphite)", fontSize: 11, fontFamily: "var(--font-gtstandardmono)", textTransform: "uppercase" }}>
-        {title}
-      </p>
+      {tooltip ? (
+        <Tooltip text={tooltip}>
+          <p style={{ color: "var(--color-graphite)", fontSize: 11, fontFamily: "var(--font-gtstandardmono)", textTransform: "uppercase" }}>
+            {title}
+          </p>
+        </Tooltip>
+      ) : (
+        <p style={{ color: "var(--color-graphite)", fontSize: 11, fontFamily: "var(--font-gtstandardmono)", textTransform: "uppercase" }}>
+          {title}
+        </p>
+      )}
       <h3 style={{ marginTop: 4, fontSize: 14, fontWeight: 700, color: "var(--color-ink-black)", fontFamily: "var(--font-gtstandardmono)" }}>
         {value}
       </h3>

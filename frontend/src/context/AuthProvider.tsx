@@ -8,6 +8,7 @@ import { AuthContext } from "./AuthContext";
 
 import {
   login as loginRequest,
+  register as registerRequest,
   getCurrentUser,
 } from "../api/services/auth/authService";
 
@@ -62,11 +63,23 @@ export default function AuthProvider({
   };
 
   const register = async (
-    _payload: RegisterRequest,
+    payload: RegisterRequest,
   ) => {
-    console.log(
-      "Registration UI coming in 9D-4",
+    const response = await registerRequest(payload);
+
+    localStorage.setItem(
+      "novaqure_token",
+      response.access_token,
     );
+
+    setToken(
+      response.access_token
+    );
+
+    const currentUser =
+      await getCurrentUser();
+
+    setUser(currentUser);
   };
 
   const logout = () => {

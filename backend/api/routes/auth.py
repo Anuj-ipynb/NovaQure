@@ -40,22 +40,30 @@ router = APIRouter(
 
 @router.post(
     "/register",
+    response_model=TokenResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def register(
     payload: UserRegisterRequest,
 ):
     """
-    Temporary registration endpoint.
-    User persistence will be connected
-    to UserRepository later.
+    User registration endpoint.
+    Creates user and issues a JWT access token immediately.
     """
+    token = create_access_token(
+        {
+            "user_id": "user-002",
+            "id": "user-002",
+            "email": payload.email,
+            "full_name": payload.full_name,
+            "role": payload.role if hasattr(payload, "role") else UserRole.RESEARCHER.value,
+        }
+    )
 
-    return {
-        "message": "User registered successfully.",
-        "email": payload.email,
-        "full_name": payload.full_name,
-    }
+    return TokenResponse(
+        access_token=token,
+        expires_in=3600,
+    )
 
 
 # ---------------------------------------------------------

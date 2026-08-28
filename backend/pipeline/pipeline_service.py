@@ -122,6 +122,7 @@ class PipelineService:
                     rank_data = ranked_map[mol.molecule_id]
 
                     wrapped_merged = {
+                        "smiles": mol.smiles,
                         "components": {
                             "qed": eval_res.qed,
                             "sa_score": eval_res.sa_score,

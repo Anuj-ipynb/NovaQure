@@ -21,12 +21,14 @@ export async function login(
 
 export async function register(
     payload: RegisterRequest,
-): Promise<void> {
+): Promise<TokenResponse> {
 
-    await api.post(
+    const response = await api.post(
         "/api/v1/auth/register",
         payload,
     );
+
+    return response.data;
 }
 
 export async function getCurrentUser(

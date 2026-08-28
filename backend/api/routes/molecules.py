@@ -56,7 +56,7 @@ def create_molecule(
 def _map_molecule_response(mol) -> dict:
     eval_dict = None
     if mol.evaluation:
-        iupac = getattr(mol.evaluation, "iupac_name", "Novel EGFR Candidate")
+        iupac = getattr(mol.evaluation, "iupac_name", None) or "Novel Targeted Bioactive Lead"
         eval_dict = {
             "qed": mol.evaluation.qed,
             "sa_score": mol.evaluation.sa_score,

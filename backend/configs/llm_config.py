@@ -10,7 +10,7 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "auto").lower()
 # NVIDIA Build API Settings (Nemotron)
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
 NVIDIA_API_URL = os.getenv("NVIDIA_API_URL", "https://integrate.api.nvidia.com/v1/chat/completions")
-NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "nvidia/nemotron-4-340b-instruct")
+NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "meta/llama-3.2-11b-vision-instruct")
 
 # Ollama Endpoint Settings (IBM Granite / Nemotron)
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -21,6 +21,7 @@ def get_active_llm_info() -> Dict[str, str]:
     """
     Auto-detects and returns the active LLM provider, model name, and endpoint.
     """
+    api_key = os.getenv("NVIDIA_API_KEY", "")
     if LLM_PROVIDER == "granite":
         return {
             "provider": "IBM Granite (Ollama)",
@@ -28,11 +29,12 @@ def get_active_llm_info() -> Dict[str, str]:
             "endpoint": f"{OLLAMA_BASE_URL}/api/generate",
             "type": "ollama"
         }
-    elif LLM_PROVIDER == "nvidia" or (LLM_PROVIDER == "auto" and NVIDIA_API_KEY):
+    elif LLM_PROVIDER == "nvidia" or (LLM_PROVIDER == "auto" and api_key):
         return {
             "provider": "NVIDIA Build API",
-            "model": NVIDIA_MODEL,
-            "endpoint": NVIDIA_API_URL,
+            "model": "meta/llama-3.2-11b-vision-instruct",
+            "endpoint": os.getenv("NVIDIA_API_URL", "https://integrate.api.nvidia.com/v1/chat/completions"),
+            "api_key": api_key,
             "type": "nvidia"
         }
     elif LLM_PROVIDER in ("ollama", "auto"):

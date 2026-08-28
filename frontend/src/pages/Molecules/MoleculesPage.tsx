@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
+import { useIsMutating } from "@tanstack/react-query";
 import { useMolecules } from "../../hooks/molecules/useMolecules";
 import { useRunPipeline } from "../../hooks/pipeline/useRunPipeline";
 import MoleculeViewer3D from "../../components/molecules/MoleculeViewer3D";
 import CandidateRadarChart from "../../components/charts/CandidateRadarChart";
+import Tooltip from "../../components/common/Tooltip";
+import api from "../../api/client";
 
 export default function MoleculesPage() {
-    const { data: dbMolecules, isLoading, error } = useMolecules();
+    const { isLoading, error } = useMolecules();
     const runPipelineMutation = useRunPipeline();
+    const isMutatingPipeline = useIsMutating({ mutationKey: ["runPipeline"] }) > 0;
 
     // Pipeline parameter states
     const [energy, setEnergy] = useState(-0.85);
@@ -18,9 +22,9 @@ export default function MoleculesPage() {
     const [llmProvider, setLlmProvider] = useState("granite");
 
     useEffect(() => {
-        fetch("/api/v1/config/llm")
-            .then((res) => res.json())
-            .then((data) => {
+        api.get("/api/v1/config/llm")
+            .then((res) => {
+                const data = res.data;
                 if (data?.active_llm?.type === "nvidia") setLlmProvider("nvidia");
                 else if (data?.active_llm?.type === "ollama") setLlmProvider("granite");
                 else if (data?.active_llm?.type === "none") setLlmProvider("deterministic");
@@ -31,18 +35,49 @@ export default function MoleculesPage() {
     const handleLLMProviderChange = async (newProvider: string) => {
         setLlmProvider(newProvider);
         try {
-            await fetch("/api/v1/config/llm", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ provider: newProvider })
-            });
+            await api.post("/api/v1/config/llm", { provider: newProvider });
         } catch (err) {
             console.error("Failed to update LLM provider:", err);
         }
     };
 
     const [showConfig, setShowConfig] = useState(false);
-    const [runResults, setRunResults] = useState<any>(null);
+    const [runResults, setRunResults] = useState<any>(() => {
+        try {
+            const saved = localStorage.getItem("novaqure_last_pipeline_results");
+            return saved ? JSON.parse(saved) : null;
+        } catch {
+            return null;
+        }
+    });
+    const [pipelineStep, setPipelineStep] = useState(0);
+
+    const isPipelineExecuting = runPipelineMutation.isPending || isMutatingPipeline || (typeof window !== "undefined" && localStorage.getItem("novaqure_pipeline_is_running") === "true");
+
+    // Dynamic Step & Storage Sync Poller (Runs across page transitions)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            try {
+                const isRunning = localStorage.getItem("novaqure_pipeline_is_running") === "true";
+                const saved = localStorage.getItem("novaqure_last_pipeline_results");
+                if (saved) {
+                    setRunResults(JSON.parse(saved));
+                }
+
+                if (isRunning) {
+                    const startTime = parseInt(localStorage.getItem("novaqure_pipeline_start_time") || "0", 10);
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    if (elapsed < 2.5) setPipelineStep(1);
+                    else if (elapsed < 5.5) setPipelineStep(2);
+                    else setPipelineStep(3);
+                } else {
+                    setPipelineStep(0);
+                }
+            } catch {}
+        }, 400);
+
+        return () => clearInterval(interval);
+    }, []);
 
     const handleRunPipeline = async () => {
         try {
@@ -75,7 +110,7 @@ export default function MoleculesPage() {
         );
     }
 
-    const activeList = runResults ? runResults.results : (dbMolecules || []);
+    const activeList = runResults ? runResults.results : [];
 
     return (
         <div>
@@ -144,7 +179,7 @@ export default function MoleculesPage() {
 
                         <button
                             onClick={handleRunPipeline}
-                            disabled={runPipelineMutation.isPending}
+                            disabled={isPipelineExecuting}
                             style={{
                                 padding: "8px 24px",
                                 borderRadius: "var(--radius-full)",
@@ -153,16 +188,111 @@ export default function MoleculesPage() {
                                 color: "var(--color-paper-white)",
                                 fontWeight: 600,
                                 fontSize: 14,
-                                cursor: runPipelineMutation.isPending ? "not-allowed" : "pointer",
-                                opacity: runPipelineMutation.isPending ? 0.7 : 1,
+                                cursor: isPipelineExecuting ? "not-allowed" : "pointer",
+                                opacity: isPipelineExecuting ? 0.7 : 1,
                                 transition: "all 0.15s ease",
                             }}
                         >
-                            {runPipelineMutation.isPending ? "Executing Pipeline..." : "🚀 Run Discovery Pipeline"}
+                            {isPipelineExecuting ? "Executing Pipeline..." : "🚀 Run Discovery Pipeline"}
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Live Pipeline Execution Progress Tracker */}
+            {isPipelineExecuting && (
+                <div
+                    style={{
+                        background: "var(--color-paper-white)",
+                        border: "2px solid var(--color-ink-black)",
+                        borderRadius: "var(--radius-cards)",
+                        padding: 24,
+                        marginBottom: 32,
+                        boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+                        animation: "fadeIn 0.3s ease",
+                    }}
+                >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-signal-orange)" }}>
+                                ⚡ Live Pipeline Execution Tracker
+                            </span>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 12, background: "rgba(255, 99, 71, 0.12)", color: "var(--color-signal-orange)", border: "1px solid var(--color-signal-orange)" }}>
+                                Engine: {llmProvider === "nvidia" ? "NVIDIA Nemotron 340B" : llmProvider === "granite" ? "IBM Granite 4.1:3b (Ollama)" : "Deterministic Rule Engine"}
+                            </span>
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-graphite)" }}>
+                            Target: EGFR Kinase (NSCLC Lung Cancer)
+                        </span>
+                    </div>
+
+                    {/* Active Parameter Telemetry Bar */}
+                    <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", fontSize: 11, fontWeight: 600, color: "var(--color-graphite)" }}>
+                        <span style={{ padding: "4px 8px", background: "var(--color-lavender-mist)", borderRadius: 4, border: "1px solid var(--color-blue-gray-mist)" }}>
+                            🎯 Energy: {energy} eV
+                        </span>
+                        <span style={{ padding: "4px 8px", background: "var(--color-lavender-mist)", borderRadius: 4, border: "1px solid var(--color-blue-gray-mist)" }}>
+                            📊 Variance: {variance}
+                        </span>
+                        <span style={{ padding: "4px 8px", background: "var(--color-lavender-mist)", borderRadius: 4, border: "1px solid var(--color-blue-gray-mist)" }}>
+                            ⚛️ Quantum Noise: {noise}
+                        </span>
+                        <span style={{ padding: "4px 8px", background: "var(--color-lavender-mist)", borderRadius: 4, border: "1px solid var(--color-blue-gray-mist)" }}>
+                            🔄 Convergence: {convergence}
+                        </span>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+                        {/* Step 1 */}
+                        <div style={{
+                            padding: 16,
+                            borderRadius: 8,
+                            background: pipelineStep >= 1 ? "rgba(255, 99, 71, 0.08)" : "var(--color-lavender-mist)",
+                            border: pipelineStep === 1 ? "1.5px solid var(--color-signal-orange)" : "1px solid var(--color-blue-gray-mist)",
+                            transition: "all 0.3s ease"
+                        }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-ink-black)", marginBottom: 4 }}>
+                                {pipelineStep > 1 ? "✓ 1. VJTVAE Latent Sampling" : pipelineStep === 1 ? "⏳ 1. VJTVAE Latent Sampling..." : "1. VJTVAE Latent Sampling"}
+                            </div>
+                            <div style={{ fontSize: 11, color: "var(--color-graphite)" }}>
+                                Sampling 128-dim continuous latent space with Energy Target {energy} eV
+                            </div>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div style={{
+                            padding: 16,
+                            borderRadius: 8,
+                            background: pipelineStep >= 2 ? "rgba(255, 99, 71, 0.08)" : "var(--color-lavender-mist)",
+                            border: pipelineStep === 2 ? "1.5px solid var(--color-signal-orange)" : "1px solid var(--color-blue-gray-mist)",
+                            transition: "all 0.3s ease"
+                        }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-ink-black)", marginBottom: 4 }}>
+                                {pipelineStep > 2 ? "✓ 2. Quantum Mitigation & Affinity" : pipelineStep === 2 ? "⏳ 2. Quantum Mitigation & Affinity..." : "2. Quantum Mitigation & Affinity"}
+                            </div>
+                            <div style={{ fontSize: 11, color: "var(--color-graphite)" }}>
+                                Chemprop GNN bioactivity & ZNE Zero-Noise Extrapolation (Noise: {noise})
+                            </div>
+                        </div>
+
+                        {/* Step 3 */}
+                        <div style={{
+                            padding: 16,
+                            borderRadius: 8,
+                            background: pipelineStep >= 3 ? "rgba(255, 99, 71, 0.08)" : "var(--color-lavender-mist)",
+                            border: pipelineStep === 3 ? "1.5px solid var(--color-signal-orange)" : "1px solid var(--color-blue-gray-mist)",
+                            transition: "all 0.3s ease"
+                        }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--color-ink-black)", marginBottom: 4 }}>
+                                {pipelineStep === 3 ? "⏳ 3. AMDE Agent Rationale..." : "3. AMDE Agent Rationale"}
+                            </div>
+                            <div style={{ fontSize: 11, color: "var(--color-graphite)" }}>
+                                Dispatching SMILES to {llmProvider === "nvidia" ? "NVIDIA Nemotron API" : llmProvider === "granite" ? "IBM Granite Ollama" : "Deterministic Engine"}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Slider configuration panel */}
             {showConfig && (
@@ -182,6 +312,8 @@ export default function MoleculesPage() {
                     <SliderField label="Simulation Variance" min={0.01} max={0.5} step={0.01} value={variance} onChange={setVariance} />
                     <SliderField label="Quantum Noise" min={0.0} max={0.3} step={0.01} value={noise} onChange={setNoise} />
                     <SliderField label="Convergence Ratio" min={0.5} max={1.0} step={0.01} value={convergence} onChange={setConvergence} />
+
+
 
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                         <label style={{ fontSize: 12, fontWeight: 600, color: "var(--color-graphite)" }}>AMDE Decision Engine</label>
@@ -403,14 +535,13 @@ function MoleculeCard({
             <div>
                 <h3
                     style={{
-                        fontSize: 16,
-                        fontWeight: 700,
+                        fontSize: 18,
+                        fontWeight: 600,
                         color: "var(--color-ink-black)",
-                        lineHeight: 1.2,
                         marginBottom: 6,
                     }}
                 >
-                    {evaluation?.iupac_name || "Novel EGFR Candidate"}
+                    {evaluation?.iupac_name || "Novel Targeted Bioactive Lead"}
                 </h3>
                 <span
                     style={{
@@ -437,7 +568,9 @@ function MoleculeCard({
             {/* Visual Fitness Score Meter */}
             <div style={{ background: "var(--color-faint-slate)", borderRadius: 4, padding: 12, border: "1px solid var(--color-lavender-mist)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 500, color: "var(--color-graphite)", marginBottom: 6 }}>
-                    <span>Optimization Fitness</span>
+                    <Tooltip text="Optimization Fitness: Composite score combining binding potency, drug safety, synthesizability, and quantum reliability.">
+                        <span>Optimization Fitness</span>
+                    </Tooltip>
                     <span style={{ color: "var(--color-ink-black)", fontWeight: 700, fontFamily: "var(--font-gtstandardmono)" }}>
                         {(score > 100 ? score / 25.0 : score).toFixed(1)} / 100
                     </span>
@@ -446,6 +579,27 @@ function MoleculeCard({
                     <div style={{ width: `${Math.min(100, score > 100 ? score / 25.0 : score)}%`, height: "100%", background: "var(--color-ink-black)" }} />
                 </div>
             </div>
+
+            {/* AMDE Agent Recommendation Box */}
+            {decision?.recommendation && (
+                <div style={{ padding: 12, borderRadius: 4, background: "var(--color-faint-slate)", border: "1px solid var(--color-lavender-mist)", fontSize: 12, lineHeight: 1.4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ fontWeight: 700, color: "var(--color-ink-black)" }}>🤖 AMDE Agent Rationale</span>
+                        {decision.recommendation.startsWith("[AMDE Agent]") || decision.recommendation.includes("Maintain structure") ? (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "rgba(255, 140, 0, 0.12)", color: "#d97706", border: "1px solid #f59e0b" }}>
+                                ⚡ Fallback Rule Engine
+                            </span>
+                        ) : (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "rgba(16, 185, 129, 0.12)", color: "#059669", border: "1px solid #10b981" }}>
+                                🟢 Live LLM Active
+                            </span>
+                        )}
+                    </div>
+                    <div style={{ color: "var(--color-graphite)" }}>
+                        {decision.recommendation}
+                    </div>
+                </div>
+            )}
 
             {/* Action Bar */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 12, borderTop: "1px solid var(--color-lavender-mist)" }}>

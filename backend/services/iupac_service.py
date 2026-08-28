@@ -62,18 +62,24 @@ class IUPACService:
                 smarts_quinazoline = Chem.MolFromSmarts("c1cnc2ccccc2n1")
                 smarts_pyridine = Chem.MolFromSmarts("c1ccncc1")
                 smarts_aniline = Chem.MolFromSmarts("c1ccccc1N")
+                smarts_indole = Chem.MolFromSmarts("c1ccc2[nH]ccc2c1")
+                smarts_pyrimidine = Chem.MolFromSmarts("c1cncnc1")
                 
                 if smarts_quinazoline and mol.HasSubstructMatch(smarts_quinazoline):
-                    return f"Quinazoline Analog ({num_atoms} Atoms)"
+                    return f"4-Anilinoquinazoline Analog ({num_atoms} Atoms)"
                 elif smarts_aniline and mol.HasSubstructMatch(smarts_aniline):
-                    return f"Anilino-Heterocycle ({num_atoms} Atoms)"
+                    return f"Substituted Anilino-Heterocycle ({num_atoms} Atoms)"
+                elif smarts_indole and mol.HasSubstructMatch(smarts_indole):
+                    return f"Indolyl Bioactive Lead ({num_atoms} Atoms)"
+                elif smarts_pyrimidine and mol.HasSubstructMatch(smarts_pyrimidine):
+                    return f"Pyrimidine Core Scaffold ({num_atoms} Atoms)"
                 elif smarts_pyridine and mol.HasSubstructMatch(smarts_pyridine):
-                    return f"Pyridinyl Scaffold ({num_atoms} Atoms)"
+                    return f"Pyridinyl Substituted Scaffold ({num_atoms} Atoms)"
                 elif num_rings >= 2:
-                    return f"Polycyclic Oncology Lead ({num_atoms} Atoms)"
+                    return f"Polycyclic Targeted Lead ({num_atoms} Atoms)"
                 else:
-                    return f"Bioactive Scaffold ({num_atoms} Atoms)"
+                    return f"Substituted Heterocycle ({num_atoms} Atoms)"
         except Exception:
             pass
 
-        return "Novel EGFR Candidate"
+        return "Novel Targeted Bioactive Lead"

@@ -102,6 +102,24 @@ export default function Sidebar() {
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <span
           style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "var(--color-paper-white)",
+            background: "var(--color-ink-black)",
+            padding: "4px 10px",
+            borderRadius: "var(--radius-full)",
+            fontFamily: "var(--font-gtstandardmono)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+          LIVE DEMO MODE
+        </span>
+
+        <span
+          style={{
             fontSize: 13,
             color: "var(--color-graphite)",
             fontFamily: "var(--font-gtstandardmono)",

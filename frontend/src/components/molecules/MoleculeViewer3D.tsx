@@ -11,7 +11,7 @@ interface MoleculeViewer3DProps {
 export default function MoleculeViewer3D({ smiles, iupacName, onClose }: MoleculeViewer3DProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<any>(null);
-  const [styleMode, setStyleMode] = useState<"stick" | "ball" | "sphere">("ball");
+  const [styleMode, setStyleMode] = useState<"stick" | "ball" | "sphere" | "surface">("ball");
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -49,17 +49,30 @@ export default function MoleculeViewer3D({ smiles, iupacName, onClose }: Molecul
   const applyStyle = (viewer: any, mode: string) => {
     if (!viewer) return;
 
+    try {
+      viewer.removeAllSurfaces();
+    } catch {
+      // Ignore surface cleanup error
+    }
+
     if (mode === "stick") {
       viewer.setStyle({}, { stick: { radius: 0.18 } });
     } else if (mode === "sphere") {
       viewer.setStyle({}, { sphere: { scale: 0.5 } });
+    } else if (mode === "surface") {
+      viewer.setStyle({}, { stick: { radius: 0.14 }, sphere: { scale: 0.25 } });
+      try {
+        viewer.addSurface($3Dmol.SurfaceType.VDW, { opacity: 0.65, color: "white" });
+      } catch {
+        // Fallback surface styling
+      }
     } else {
       viewer.setStyle({}, { stick: { radius: 0.15 }, sphere: { scale: 0.3 } });
     }
     viewer.render();
   };
 
-  const handleStyleChange = (mode: "stick" | "ball" | "sphere") => {
+  const handleStyleChange = (mode: "stick" | "ball" | "sphere" | "surface") => {
     setStyleMode(mode);
     applyStyle(viewerRef.current, mode);
   };
@@ -133,8 +146,8 @@ export default function MoleculeViewer3D({ smiles, iupacName, onClose }: Molecul
 
         {/* Controls & Style Selector */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
-          <div style={{ display: "flex", gap: 6 }}>
-            {(["ball", "stick", "sphere"] as const).map((m) => (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {(["ball", "stick", "sphere", "surface"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => handleStyleChange(m)}
@@ -150,7 +163,7 @@ export default function MoleculeViewer3D({ smiles, iupacName, onClose }: Molecul
                   cursor: "pointer"
                 }}
               >
-                {m === "ball" ? "Ball & Stick" : m}
+                {m === "ball" ? "Ball & Stick" : m === "surface" ? "🌀 3D Electron Surface" : m}
               </button>
             ))}
           </div>
