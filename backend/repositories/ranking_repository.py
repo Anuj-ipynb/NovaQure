@@ -43,8 +43,21 @@ class RankingRepository(BaseRepository[Ranking]):
     def list_rankings(
         self,
     ) -> list[Ranking]:
+        from backend.models.experiment import Experiment
+        latest_exp = self.db.query(Experiment.id).order_by(Experiment.created_at.desc()).first()
+        
+        if latest_exp and latest_exp[0]:
+            return self.get_by_experiment(latest_exp[0])
 
-        return list(self.get_all())
+        stmt = (
+            select(Ranking)
+            .order_by(Ranking.rank.asc())
+            .limit(20)
+        )
+
+        return list(
+            self.db.scalars(stmt).all()
+        )
 
     # ---------------------------------------------------------
     # Fetch rankings belonging to an experiment

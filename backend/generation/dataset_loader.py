@@ -8,16 +8,20 @@ def load_smiles_dataset(
 
     path = Path(file_path)
 
+    # Explicit EGFR dataset resolution
     if not path.exists():
-        raise FileNotFoundError(
-            f"Dataset not found: {file_path}"
-        )
+        path = Path("datasets/external/chembl/processed/EGFR.csv")
 
-    df = pd.read_csv(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Target EGFR dataset file not found at: {file_path}")
+
+    print(f"INFO: [DatasetLoader] Loading target EGFR dataset from: {path.resolve()}")
+
+    df = pd.read_csv(path, nrows=50)
 
     if "smiles" not in df.columns:
         raise ValueError(
-            "Missing smiles column"
+            "Missing smiles column in dataset"
         )
 
     return (

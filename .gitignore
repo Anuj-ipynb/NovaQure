@@ -47,3 +47,5 @@ Thumbs.db
 
 # Evaluation artifacts
 artifacts/
+.aider*
+

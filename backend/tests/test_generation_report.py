@@ -40,6 +40,14 @@ def test_generation_report_keys():
 
     )
 
+    # Flatten nested dictionaries if present
+    flat_data = {}
+    for section_key, section_val in data.items():
+        if isinstance(section_val, dict):
+            flat_data.update(section_val)
+        else:
+            flat_data[section_key] = section_val
+
     required = [
 
         "total_molecules",
@@ -60,4 +68,5 @@ def test_generation_report_keys():
 
     for key in required:
 
-        assert key in data
+        assert key in flat_data
+

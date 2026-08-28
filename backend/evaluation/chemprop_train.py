@@ -165,10 +165,23 @@ class ChempropTrainer:
         logger.info("Command: %s", " ".join(command))
 
         try:
+            import os
+            # Ensure the virtual environment's bin/Scripts folder is in PATH for the subprocess
+            env = os.environ.copy()
+            project_root = Path(__file__).resolve().parents[2]
+            venv_scripts = str(project_root / "venv" / "Scripts")
+            env["PATH"] = venv_scripts + os.pathsep + env.get("PATH", "")
+            
+            # Resolve the absolute path to chemprop.exe if running in Windows venv
+            chemprop_exe = project_root / "venv" / "Scripts" / "chemprop.exe"
+            if chemprop_exe.exists():
+                command[0] = str(chemprop_exe)
+            
             subprocess.run(
                 command,
                 check=True,
                 text=True,
+                env=env,
             )
             logger.info("Chemprop training completed successfully.")
 

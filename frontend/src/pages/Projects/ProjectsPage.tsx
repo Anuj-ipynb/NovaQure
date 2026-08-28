@@ -94,31 +94,26 @@ export default function ProjectsPage() {
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(4,1fr)",
+                    gridTemplateColumns: "repeat(3,1fr)",
                     gap: 24,
                     marginBottom: 40,
                 }}
             >
                 <StatCard
-                    title="Projects"
+                    title="Active Workspaces"
                     value={
                         projects?.length?.toString() || "0"
                     }
                 />
 
                 <StatCard
-                    title="Running Experiments"
-                    value="48"
+                    title="Primary Target"
+                    value="EGFR (Oncology)"
                 />
 
                 <StatCard
-                    title="Generated Molecules"
-                    value="14,287"
-                />
-
-                <StatCard
-                    title="Reliability"
-                    value="94.8%"
+                    title="Data Source"
+                    value="ChEMBL (10.8k bioactives)"
                 />
             </div>
 

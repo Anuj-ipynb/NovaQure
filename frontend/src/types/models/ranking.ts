@@ -6,4 +6,11 @@ export interface Ranking {
   confidence: number;
   created_at: string;
   updated_at: string;
+  smiles?: string;
+  reliability?: number;
+  affinity?: number;
+  qed?: number;
+  sa?: number;
+  iupac_name?: string;
 }
+

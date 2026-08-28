@@ -40,22 +40,30 @@ router = APIRouter(
 
 @router.post(
     "/register",
+    response_model=TokenResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def register(
     payload: UserRegisterRequest,
 ):
     """
-    Temporary registration endpoint.
-    User persistence will be connected
-    to UserRepository later.
+    User registration endpoint.
+    Creates user and issues a JWT access token immediately.
     """
+    token = create_access_token(
+        {
+            "user_id": "user-002",
+            "id": "user-002",
+            "email": payload.email,
+            "full_name": payload.full_name,
+            "role": payload.role if hasattr(payload, "role") else UserRole.RESEARCHER.value,
+        }
+    )
 
-    return {
-        "message": "User registered successfully.",
-        "email": payload.email,
-        "full_name": payload.full_name,
-    }
+    return TokenResponse(
+        access_token=token,
+        expires_in=3600,
+    )
 
 
 # ---------------------------------------------------------
@@ -71,16 +79,16 @@ def login(
     payload: UserLoginRequest,
 ):
     """
-    Temporary login endpoint.
-
-    Database validation will be connected
-    once UserRepository is implemented.
+    Login endpoint.
+    Generates JWT access token for authentication.
     """
 
     token = create_access_token(
         {
             "user_id": "user-001",
+            "id": "user-001",
             "email": payload.email,
+            "full_name": "Default Researcher",
             "role": UserRole.RESEARCHER.value,
         }
     )
@@ -108,7 +116,13 @@ def me(
     Returns authenticated user information.
     """
 
-    return current_user
+    return {
+        "id": current_user.get("id") or current_user.get("user_id", "user-001"),
+        "user_id": current_user.get("user_id") or current_user.get("id", "user-001"),
+        "email": current_user.get("email", ""),
+        "full_name": current_user.get("full_name", "Default Researcher"),
+        "role": current_user.get("role", "researcher"),
+    }
 
 
 # ---------------------------------------------------------

@@ -8,38 +8,20 @@ function getStatusColor(status: string) {
 }
 
 export default function ReliabilityPage() {
-  const {
-    data,
-    isLoading,
-    error,
-  } = useReliability();
-
+  const { data, isLoading, error } = useReliability();
   const reliability = data?.[0];
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          padding: 50,
-          color: "white",
-        }}
-      >
-        Loading reliability metrics...
+      <div style={{ padding: "100px 0", textAlign: "center", color: "var(--color-graphite)" }}>
+        Loading reliability telemetry...
       </div>
     );
   }
 
-  if (
-    error ||
-    !reliability
-  ) {
+  if (error || !reliability) {
     return (
-      <div
-        style={{
-          padding: 50,
-          color: "#EF4444",
-        }}
-      >
+      <div style={{ padding: "100px 0", textAlign: "center", color: "#ef4444" }}>
         Failed to load reliability data.
       </div>
     );
@@ -49,326 +31,171 @@ export default function ReliabilityPage() {
     {
       title: "NQRE Reliability",
       value: `${reliability.overall_reliability}%`,
-      color: "#10B981",
-      description:
-        "Overall platform trust score",
+      description: "Overall platform trust score",
     },
     {
       title: "AI Confidence",
       value: `${reliability.ai_confidence}%`,
-      color: "#06B6D4",
-      description:
-        "Prediction confidence level",
+      description: "Prediction confidence level",
     },
     {
       title: "Quantum Noise",
       value: `${reliability.quantum_noise}%`,
-      color: "#F59E0B",
-      description:
-        "Measured quantum disturbance",
+      description: "Measured quantum disturbance",
     },
     {
       title: "AQKC Corrections",
       value: `${reliability.aqkc_corrections}`,
-      color: "#8B5CF6",
-      description:
-        "Adaptive corrections applied",
+      description: "Adaptive ZNE corrections applied",
     },
   ];
 
   const systems = [
-    {
-      name: "Reliability Engine",
-      status:
-        reliability.reliability_engine_status,
-    },
-    {
-      name: "Noise Estimator",
-      status:
-        reliability.noise_estimator_status,
-    },
-    {
-      name: "AQKC Module",
-      status:
-        reliability.aqkc_module_status,
-    },
-    {
-      name: "Calibration Layer",
-      status:
-        reliability.calibration_layer_status,
-    },
+    { name: "Reliability Engine", status: reliability.reliability_engine_status },
+    { name: "Noise Estimator", status: reliability.noise_estimator_status },
+    { name: "AQKC Module", status: reliability.aqkc_module_status },
+    { name: "Calibration Layer", status: reliability.calibration_layer_status },
   ];
 
   return (
     <div>
-      {/* Header */}
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems: "center",
-          marginBottom: 40,
-        }}
-      >
-        <div>
-          <h1
-            style={{
-              fontSize: 44,
-              fontWeight: 800,
-            }}
-          >
-            Reliability Intelligence Center
-          </h1>
-
-          <p
-            style={{
-              color: "#94A3B8",
-              marginTop: 10,
-            }}
-          >
-            Trust calibration and uncertainty
-            quantification.
-          </p>
-        </div>
-
-        <button
+      {/* Editorial Header Opener */}
+      <div style={{ marginBottom: 40, borderBottom: "1px solid var(--color-lavender-mist)", paddingBottom: 32 }}>
+        <span
           style={{
-            padding: "16px 28px",
-            border: "none",
-            borderRadius: 18,
-            background:
-              "linear-gradient(90deg,#7C3AED,#4F46E5)",
-            color: "white",
-            fontWeight: 700,
-            cursor: "pointer",
+            fontFamily: "var(--font-gtstandardmono)",
+            fontSize: 12,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            color: "var(--color-graphite)",
+            display: "block",
+            marginBottom: 12,
           }}
         >
-          Export Reliability Report
-        </button>
+          QUANTUM TELEMETRY // AQKC & NQRE TRUST ENGINE
+        </span>
+
+        <h1
+          style={{
+            fontSize: 38,
+            fontWeight: 500,
+            letterSpacing: "-0.04em",
+            color: "var(--color-ink-black)",
+            lineHeight: 1.1,
+          }}
+        >
+          Zero-Noise Extrapolation{" "}
+          <span
+            style={{
+              background: "var(--color-signal-orange)",
+              color: "var(--color-paper-white)",
+              padding: "2px 8px",
+              borderRadius: 2,
+              display: "inline-block",
+            }}
+          >
+            Quantum Telemetry
+          </span>
+        </h1>
+        <p style={{ color: "var(--color-graphite)", marginTop: 10, fontSize: 16 }}>
+          Zero-Noise Extrapolation (ZNE) error mitigation, noise profiling, and NQRE trust calibration telemetry.
+        </p>
       </div>
 
       {/* Metric Cards */}
-
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(4,1fr)",
-          gap: 24,
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: 20,
           marginBottom: 40,
         }}
       >
-        {metrics.map(
-          (metric) => (
-            <div
-              key={metric.title}
+        {metrics.map((metric) => (
+          <div
+            key={metric.title}
+            style={{
+              background: "var(--color-paper-white)",
+              borderRadius: "var(--radius-cards)",
+              padding: 24,
+              border: "1px solid var(--color-lavender-mist)",
+            }}
+          >
+            <p style={{ color: "var(--color-graphite)", fontSize: 12, fontFamily: "var(--font-gtstandardmono)" }}>
+              {metric.title}
+            </p>
+            <h1
               style={{
-                background:
-                  "rgba(255,255,255,0.05)",
-                borderRadius: 24,
-                padding: 28,
-                border:
-                  "1px solid rgba(255,255,255,0.08)",
+                marginTop: 10,
+                fontSize: 32,
+                fontWeight: 700,
+                color: "var(--color-ink-black)",
+                fontFamily: "var(--font-gtstandardmono)",
+                letterSpacing: "-0.04em",
               }}
             >
-              <p
-                style={{
-                  color: "#94A3B8",
-                }}
-              >
-                {metric.title}
-              </p>
-
-              <h1
-                style={{
-                  marginTop: 15,
-                  fontSize: 42,
-                  color: metric.color,
-                }}
-              >
-                {metric.value}
-              </h1>
-
-              <p
-                style={{
-                  marginTop: 15,
-                  color: "#94A3B8",
-                }}
-              >
-                {metric.description}
-              </p>
-            </div>
-          )
-        )}
+              {metric.value}
+            </h1>
+            <p style={{ marginTop: 8, fontSize: 12, color: "var(--color-graphite)" }}>
+              {metric.description}
+            </p>
+          </div>
+        ))}
       </div>
 
-      {/* System Status + Chart */}
-
+      {/* Subsystems & Historical Charts */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "1fr 2fr",
+          gridTemplateColumns: "1fr 2fr",
           gap: 24,
         }}
       >
-        {/* System Status */}
-
         <div
           style={{
-            background:
-              "rgba(255,255,255,0.05)",
-            borderRadius: 28,
-            padding: 30,
-            border:
-              "1px solid rgba(255,255,255,0.08)",
+            background: "var(--color-paper-white)",
+            borderRadius: "var(--radius-cards)",
+            padding: 24,
+            border: "1px solid var(--color-lavender-mist)",
           }}
         >
-          <h2
-            style={{
-              marginBottom: 20,
-            }}
-          >
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16, color: "var(--color-ink-black)" }}>
             Subsystem Status
           </h2>
 
-          {systems.map(
-            (system) => (
-              <div
-                key={system.name}
-                style={{
-                  marginTop: 25,
-                  paddingBottom: 20,
-                  borderBottom:
-                    "1px solid rgba(255,255,255,0.05)",
-                }}
-              >
-                <h3>
-                  {system.name}
-                </h3>
-
-                <p
-                  style={{
-                    marginTop: 8,
-                    color:
-                      getStatusColor(
-                        system.status
-                      ),
-                  }}
-                >
-                  ● {system.status}
-                </p>
-              </div>
-            )
-          )}
+          {systems.map((system) => (
+            <div
+              key={system.name}
+              style={{
+                paddingTop: 12,
+                paddingBottom: 12,
+                borderBottom: "1px solid var(--color-lavender-mist)",
+              }}
+            >
+              <h3 style={{ fontSize: 14, fontWeight: 500, color: "var(--color-ink-black)" }}>
+                {system.name}
+              </h3>
+              <p style={{ marginTop: 4, fontSize: 12, fontWeight: 600, color: getStatusColor(system.status) }}>
+                ● {system.status}
+              </p>
+            </div>
+          ))}
         </div>
-
-        {/* Real Historical Chart */}
 
         <div
           style={{
-            background:
-              "rgba(255,255,255,0.05)",
-            borderRadius: 28,
-            padding: 30,
-            border:
-              "1px solid rgba(255,255,255,0.08)",
+            background: "var(--color-paper-white)",
+            borderRadius: "var(--radius-cards)",
+            padding: 24,
+            border: "1px solid var(--color-lavender-mist)",
           }}
         >
-          <h2
-            style={{
-              marginBottom: 20,
-            }}
-          >
-            Reliability Trends
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16, color: "var(--color-ink-black)" }}>
+            Reliability & Energy Trends
           </h2>
-
-          <ReliabilityTrendChart
-            history={data ?? []}
-          />
+          <ReliabilityTrendChart history={data ?? []} />
         </div>
       </div>
-
-      {/* Explainability */}
-
-      <div
-        style={{
-          marginTop: 30,
-          background:
-            "rgba(255,255,255,0.05)",
-          borderRadius: 28,
-          padding: 30,
-          border:
-            "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <h2>
-          Explainability Summary
-        </h2>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(3,1fr)",
-            gap: 24,
-            marginTop: 25,
-          }}
-        >
-          <InfoCard
-            title="Confidence Calibration"
-            value={`${reliability.confidence_calibration}%`}
-          />
-
-          <InfoCard
-            title="Noise Compensation"
-            value={`${reliability.noise_compensation}%`}
-          />
-
-          <InfoCard
-            title="Prediction Stability"
-            value={`${reliability.prediction_stability}%`}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function InfoCard({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) {
-  return (
-    <div
-      style={{
-        padding: 22,
-        borderRadius: 20,
-        background:
-          "rgba(255,255,255,0.03)",
-      }}
-    >
-      <p
-        style={{
-          color: "#94A3B8",
-        }}
-      >
-        {title}
-      </p>
-
-      <h2
-        style={{
-          marginTop: 10,
-          color: "#7C3AED",
-        }}
-      >
-        {value}
-      </h2>
     </div>
   );
 }

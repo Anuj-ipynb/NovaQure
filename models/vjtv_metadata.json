@@ -1,0 +1,7 @@
+{
+  "latent_dim": 128,
+  "vocab_size": 35,
+  "max_len": 256,
+  "device": "cpu",
+  "beta": 0.1
+}

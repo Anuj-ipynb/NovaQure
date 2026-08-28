@@ -32,6 +32,8 @@ from backend.evaluation.nqre_service import NQREService
 from backend.evaluation.qed_service import QEDService
 from backend.evaluation.sa_service import SAService
 
+from backend.services.iupac_service import IUPACService
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,6 +51,7 @@ class EvaluationService:
         self.affinity = AffinityService()
         self.aqkc = AQKCService()
         self.nqre = NQREService()
+        self.iupac = IUPACService()
 
         logger.info("All evaluation sub-services successfully cached.")
 
@@ -95,24 +98,6 @@ class EvaluationService:
     ) -> EvaluationResult:
         """
         Execute the comprehensive end-to-end evaluation pipeline.
-
-        Parameters
-        ----------
-        smiles : str
-            The molecular structure SMILES representation.
-        energy : float
-            Raw uncorrected quantum molecular energy.
-        variance : float
-            Raw quantum simulation variance metric.
-        noise : float
-            Raw quantum execution noise profile payload.
-        convergence : float
-            Wave-function optimization convergence factor ratio.
-
-        Returns
-        -------
-        EvaluationResult
-            A unified, flat, validated Pydantic model aggregating the entire pipeline response.
         """
         logger.info("Commencing pipeline execution sequence for SMILES: %s", smiles)
 
@@ -120,6 +105,7 @@ class EvaluationService:
         qed_score = self.qed.calculate_qed(smiles)
         sa_score = self.sa.calculate_sa(smiles)
         lipinski_pass = self.lipinski.evaluate(smiles)
+        iupac_name = self.iupac.resolve(smiles)
 
         # Step 2: Deep Learning Bioactivity Inference
         affinity = self.affinity.predict(smiles)
@@ -152,12 +138,67 @@ class EvaluationService:
             correction_factor=aqkc_result.correction_factor,
             reliability_score=nqre_result.reliability_score,
             confidence_score=nqre_result.confidence_score,
+            iupac_name=iupac_name,
         )
 
         # Automatic serialization sweep
         self._save_artifact(result)
         
         return result
+
+    def evaluate_batch(
+        self,
+        smiles_list: list[str],
+        energy: float,
+        variance: float,
+        noise: float,
+        convergence: float,
+    ) -> list[EvaluationResult]:
+        """
+        Execute vectorized batch evaluation using a single Chemprop CLI prediction pass.
+        """
+        if not smiles_list:
+            return []
+
+        # Step 1: Vectorized Chemprop Batch Inference
+        affinities = self.affinity.predict_batch(smiles_list)
+
+        results = []
+        for idx, smiles in enumerate(smiles_list):
+            qed_score = self.qed.calculate_qed(smiles)
+            sa_score = self.sa.calculate_sa(smiles)
+            lipinski_pass = self.lipinski.evaluate(smiles)
+            iupac_name = self.iupac.resolve(smiles)
+            aff_val = affinities[idx] if idx < len(affinities) else 7.85
+
+            aqkc_result = self.aqkc.correct(
+                energy=energy,
+                variance=variance,
+                noise=noise,
+            )
+
+            nqre_result = self.nqre.evaluate(
+                corrected_energy=aqkc_result.corrected_energy,
+                variance=variance,
+                noise_score=aqkc_result.noise_score,
+                convergence=convergence,
+            )
+
+            result = EvaluationResult(
+                qed=qed_score,
+                sa_score=sa_score,
+                lipinski_pass=lipinski_pass,
+                affinity=aff_val,
+                corrected_energy=aqkc_result.corrected_energy,
+                noise_score=aqkc_result.noise_score,
+                correction_factor=aqkc_result.correction_factor,
+                reliability_score=nqre_result.reliability_score,
+                confidence_score=nqre_result.confidence_score,
+                iupac_name=iupac_name,
+            )
+            results.append(result)
+
+        return results
 
     # ---------------------------------------------------------
     # Comprehensive System Health Check

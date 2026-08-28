@@ -1,73 +1,30 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
-
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "../components/layout/Layout";
-
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 
-import DashboardPage from "../pages/Dashboard/DashboardPage";
-import ProjectsPage from "../pages/Projects/ProjectsPage";
-import ExperimentsPage from "../pages/Experiments/ExperimentsPage";
 import MoleculesPage from "../pages/Molecules/MoleculesPage";
 import RankingsPage from "../pages/Rankings/RankingsPage";
 import ReliabilityPage from "../pages/Reliability/ReliabilityPage";
-
 import LoginPage from "../pages/Auth/LoginPage";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Authentication Routes */}
+        {/* Authentication */}
+        <Route path="/login" element={<LoginPage />} />
 
-        <Route
-          path="/login"
-          element={<LoginPage />}
-        />
-
-        {/* Protected Dashboard */}
-
+        {/* Discovery Studio (Primary Home) */}
         <Route
           path="/"
           element={
             <ProtectedRoute>
               <Layout>
-                <DashboardPage />
+                <MoleculesPage />
               </Layout>
             </ProtectedRoute>
           }
         />
-
-        {/* Protected Projects */}
-
-        <Route
-          path="/projects"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ProjectsPage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected Experiments */}
-
-        <Route
-          path="/experiments"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <ExperimentsPage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Protected Molecules */}
 
         <Route
           path="/molecules"
@@ -80,8 +37,7 @@ export default function AppRouter() {
           }
         />
 
-        {/* Protected Rankings */}
-
+        {/* Prioritization Leaderboard */}
         <Route
           path="/rankings"
           element={
@@ -93,8 +49,7 @@ export default function AppRouter() {
           }
         />
 
-        {/* Protected Reliability */}
-
+        {/* Quantum Telemetry */}
         <Route
           path="/reliability"
           element={
@@ -105,6 +60,11 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
+
+        {/* Redirect Legacy Routes */}
+        <Route path="/projects" element={<Navigate to="/molecules" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/molecules" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

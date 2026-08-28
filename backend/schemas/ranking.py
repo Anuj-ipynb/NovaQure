@@ -91,6 +91,19 @@ class RankingResponse(TimestampSchema):
 
     confidence: float
 
+    smiles: Optional[str] = None
+    
+    reliability: Optional[float] = None
+    
+    affinity: Optional[float] = None
+
+    qed: Optional[float] = None
+
+    sa: Optional[float] = None
+
+    iupac_name: Optional[str] = None
+
+
 
 # ---------------------------------------------------------
 # Ranking Summary

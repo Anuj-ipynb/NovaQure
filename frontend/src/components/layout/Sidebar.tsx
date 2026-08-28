@@ -1,46 +1,20 @@
-import {
-  FaChartLine,
-  FaProjectDiagram,
-  FaFlask,
-  FaAtom,
-  FaDatabase,
-  FaShieldAlt,
-  FaSignOutAlt,
-  FaUserCircle,
-} from "react-icons/fa";
-
+import { FaAtom, FaDatabase, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
-
 import { useAuth } from "../../hooks/auth/useAuth";
 
 const navigationItems = [
   {
-    title: "Dashboard",
-    path: "/",
-    icon: <FaChartLine />,
-  },
-  {
-    title: "Projects",
-    path: "/projects",
-    icon: <FaProjectDiagram />,
-  },
-  {
-    title: "Experiments",
-    path: "/experiments",
-    icon: <FaFlask />,
-  },
-  {
-    title: "Molecules",
+    title: "Discovery Studio",
     path: "/molecules",
     icon: <FaAtom />,
   },
   {
-    title: "Rankings",
+    title: "Leaderboard",
     path: "/rankings",
     icon: <FaDatabase />,
   },
   {
-    title: "Reliability",
+    title: "Quantum Reliability",
     path: "/reliability",
     icon: <FaShieldAlt />,
   },
@@ -48,76 +22,58 @@ const navigationItems = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
-
-  const {
-    user,
-    logout,
-  } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
-
     navigate("/login");
   };
 
-  const initials =
-    user?.full_name
-      ?.split(" ")
-      .map((word) => word[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "NQ";
-
   return (
-    <aside
+    <header
       style={{
-        width: 280,
-        background:
-          "linear-gradient(180deg,#08111f,#111827)",
-        minHeight: "100vh",
-        padding: 30,
-        borderRight:
-          "1px solid rgba(255,255,255,0.05)",
+        background: "var(--color-paper-white)",
+        borderBottom: "1px solid var(--color-lavender-mist)",
+        padding: "0 24px",
+        height: 64,
         display: "flex",
-        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-between",
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
       }}
     >
-      {/* Logo */}
-
-      <div
-        style={{
-          marginBottom: 50,
-        }}
-      >
-        <h1
+      {/* Brand Logo */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span
           style={{
-            fontSize: 32,
-            color: "#7C3AED",
+            background: "var(--color-signal-orange)",
+            color: "var(--color-paper-white)",
             fontWeight: 800,
+            fontSize: 12,
+            padding: "3px 7px",
+            borderRadius: 4,
+            fontFamily: "var(--font-gtstandardmono)",
+            letterSpacing: "0.06em",
+          }}
+        >
+          NQ
+        </span>
+        <span
+          style={{
+            fontSize: 20,
+            fontWeight: 700,
+            color: "var(--color-ink-black)",
+            letterSpacing: "-0.02em",
           }}
         >
           NovaQure
-        </h1>
-
-        <p
-          style={{
-            color: "#94A3B8",
-            marginTop: 8,
-          }}
-        >
-          AI + Quantum Discovery
-        </p>
+        </span>
       </div>
 
-      {/* Navigation */}
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
+      {/* Streamlined 3-Tab Navigation Links */}
+      <nav style={{ display: "flex", gap: 8 }}>
         {navigationItems.map((item) => (
           <NavLink
             key={item.title}
@@ -125,162 +81,74 @@ export default function Sidebar() {
             style={({ isActive }) => ({
               display: "flex",
               alignItems: "center",
-              gap: 16,
-              padding: "16px 18px",
-              borderRadius: 16,
+              gap: 8,
+              padding: "8px 16px",
+              borderRadius: "var(--radius-full)",
               textDecoration: "none",
-              color: "white",
-              background: isActive
-                ? "linear-gradient(90deg,#7C3AED,#4F46E5)"
-                : "rgba(255,255,255,0.03)",
-              transition: "0.3s",
-              fontWeight: isActive ? 700 : 500,
+              fontSize: 14,
+              fontWeight: isActive ? 600 : 500,
+              color: isActive ? "var(--color-ink-black)" : "var(--color-graphite)",
+              background: isActive ? "var(--color-lavender-mist)" : "transparent",
+              transition: "all 0.15s ease",
             })}
           >
-            <span
-              style={{
-                fontSize: 18,
-              }}
-            >
-              {item.icon}
-            </span>
-
+            <span style={{ fontSize: 14 }}>{item.icon}</span>
             {item.title}
           </NavLink>
         ))}
-      </div>
+      </nav>
 
-      {/* Spacer */}
-
-      <div style={{ flex: 1 }} />
-
-      {/* System Status */}
-
-      <div
-        style={{
-          padding: 20,
-          borderRadius: 20,
-          background:
-            "rgba(255,255,255,0.04)",
-          border:
-            "1px solid rgba(255,255,255,0.05)",
-          marginBottom: 20,
-        }}
-      >
-        <h3
+      {/* User Actions & Pill Button */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <span
           style={{
-            marginBottom: 12,
-          }}
-        >
-          System Status
-        </h3>
-
-        <p
-          style={{
-            color: "#10B981",
-          }}
-        >
-          ● All services operational
-        </p>
-
-        <p
-          style={{
-            color: "#94A3B8",
-            marginTop: 10,
-          }}
-        >
-          Backend API connected
-        </p>
-
-        <p
-          style={{
-            color: "#94A3B8",
-            marginTop: 5,
-          }}
-        >
-          Quantum Engine standby
-        </p>
-      </div>
-
-      {/* User Profile */}
-
-      <div
-        style={{
-          padding: 20,
-          borderRadius: 20,
-          background:
-            "rgba(255,255,255,0.04)",
-          border:
-            "1px solid rgba(255,255,255,0.05)",
-        }}
-      >
-        <div
-          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "var(--color-paper-white)",
+            background: "var(--color-ink-black)",
+            padding: "4px 10px",
+            borderRadius: "var(--radius-full)",
+            fontFamily: "var(--font-gtstandardmono)",
             display: "flex",
             alignItems: "center",
-            gap: 14,
-            marginBottom: 18,
+            gap: 6,
           }}
         >
-          <div
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: "50%",
-              background:
-                "linear-gradient(135deg,#7C3AED,#06B6D4)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              fontWeight: 700,
-              fontSize: 18,
-            }}
-          >
-            {initials}
-          </div>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+          LIVE DEMO MODE
+        </span>
 
-          <div>
-            <div
-              style={{
-                fontWeight: 600,
-              }}
-            >
-              {user?.full_name || "Research User"}
-            </div>
-
-            <div
-              style={{
-                color: "#94A3B8",
-                fontSize: 14,
-              }}
-            >
-              {user?.role || "Researcher"}
-            </div>
-          </div>
-        </div>
+        <span
+          style={{
+            fontSize: 13,
+            color: "var(--color-graphite)",
+            fontFamily: "var(--font-gtstandardmono)",
+          }}
+        >
+          {user?.full_name || "Researcher"}
+        </span>
 
         <button
           onClick={handleLogout}
           style={{
-            width: "100%",
-            padding: "14px",
-            borderRadius: 14,
+            background: "var(--color-ink-black)",
+            color: "var(--color-paper-white)",
             border: "none",
-            background:
-              "rgba(239,68,68,0.15)",
-            color: "#EF4444",
+            borderRadius: "var(--radius-full)",
+            padding: "8px 18px",
+            fontSize: 13,
             fontWeight: 600,
             cursor: "pointer",
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
-            gap: 10,
+            gap: 6,
+            transition: "all 0.15s ease",
           }}
         >
-          <FaSignOutAlt />
+          <FaSignOutAlt style={{ fontSize: 12 }} />
           Logout
         </button>
       </div>
-    </aside>
+    </header>
   );
 }

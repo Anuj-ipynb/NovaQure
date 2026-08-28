@@ -12,8 +12,9 @@ from .experiments import router as experiment_router
 from .molecules import router as molecule_router
 from .rankings import router as ranking_router
 from .reliability import router as reliability_router
-
-
+from .generation import router as generation_router
+from .evaluation import router as evaluation_router
+from .pipeline import router as pipeline_router
 __all__ = [
     "auth_router",
     "health_router",
@@ -22,4 +23,7 @@ __all__ = [
     "molecule_router",
     "ranking_router",
     "reliability_router",
+    "generation_router",
+    "evaluation_router",
+    "pipeline_router"
 ]
