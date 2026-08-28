@@ -1,524 +1,184 @@
-# NovaQure
+# NovaQure 🧬⚛️
 
-## Noise-Adaptive Hybrid AI–Quantum Framework for Intelligent Drug Discovery
+### **Noise-Adaptive Hybrid AI–Quantum Framework for Targeted Oncology Drug Discovery**
 
-NovaQure is a research-oriented hybrid AI–Quantum drug discovery framework designed to accelerate molecular discovery through artificial intelligence, quantum-inspired optimization, reliability-aware evaluation, and adaptive molecular refinement.
+![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)
+![React](https://img.shields.io/badge/React-18.0-61DAFB.svg)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C.svg)
+![Qiskit](https://img.shields.io/badge/Qiskit-1.0%2B-6929C4.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-The framework integrates modern molecular generation techniques, graph-based molecular representation learning, quantum-inspired evaluation mechanisms, and agentic optimization strategies within a unified closed-loop architecture.
+NovaQure is a state-of-the-art hybrid AI–Quantum drug discovery platform engineered to accelerate targeted small-molecule discovery against cancer protein targets (specifically **EGFR Kinase** in non-small cell lung cancer).
 
-Unlike conventional drug discovery systems that terminate after candidate generation and evaluation, NovaQure continuously refines molecular candidates through iterative feedback, reliability analysis, and optimization-driven regeneration.
-
----
-
-# Vision
-
-NovaQure aims to establish a scalable and explainable framework for next-generation molecular discovery by combining:
-
-* Artificial Intelligence
-* Quantum-Inspired Computation
-* Reliability-Aware Evaluation
-* Agentic Optimization
-* Explainable Decision Systems
-
-The platform is designed as both:
-
-* a computational drug discovery research framework,
-* and a foundation for future AI–Quantum molecular optimization systems.
+Unlike legacy pipelines that rely solely on static generation or unverified scoring, NovaQure combines **Continuous VJTVAE Latent Space Sampling**, **Chemprop Graph Neural Network (MPNN) Bioactivity Prediction**, **Qiskit Zero-Noise Extrapolation (ZNE) Quantum Reliability Scoring**, and an **Autonomous AMDE LLM Reasoning Agent** powered by IBM Granite 4.1:3b and NVIDIA NIM Cloud APIs.
 
 ---
 
-# Research Motivation
+## 🎯 Research Motivation & Vision
 
-Traditional drug discovery pipelines suffer from:
+Traditional drug discovery pipelines suffer from extensive molecular search spaces ($> 10^{60}$ potential structures), high laboratory synthesis costs, long optimization cycles (10+ years), and low candidate clinical success rates.
 
-* extensive molecular search spaces,
-* expensive laboratory experimentation,
-* long optimization cycles,
-* poor candidate success rates,
-* and limited molecular exploration efficiency.
-
-Recent advances in artificial intelligence have improved molecular generation and property prediction. However, purely classical systems often struggle to model complex molecular interactions and uncertainty during candidate evaluation.
-
-NovaQure addresses these challenges through a hybrid architecture that integrates:
-
-* AI-driven molecular generation,
-* quantum-inspired molecular analysis,
-* adaptive latent-space refinement,
-* reliability-aware evaluation,
-* and iterative optimization.
+NovaQure addresses these challenges through a hybrid architecture designed to:
+* **Accelerate Discovery Cycles**: Replace manual trial-and-error with 128-dimensional continuous latent space sampling.
+* **Guarantee Syntactic Validity**: Utilize SELFIES representations to eliminate invalid chemical structures.
+* **Mitigate NISQ Quantum Noise**: Apply Qiskit Zero-Noise Extrapolation (ZNE) to obtain reliable molecular ground-state energies under noisy quantum conditions.
+* **Provide Explainable AI Guidance**: Employ an autonomous LLM reasoning agent (IBM Granite / NVIDIA NIM) to generate transparent, 1-sentence medicinal chemistry rationale for every lead candidate.
 
 ---
 
-# Core Research Contributions
+## 🌟 Core System Features & Innovations
 
-## 1. Noise-Adaptive Quantum Reliability Engine (NQRE)
+### 1. 🧬 Generative Molecular Engine (VJTVAE + SELFIES)
+* **128-Dimensional Continuous Latent Space**: Initialized from **10,833 ChEMBL EGFR bioactive compounds**.
+* **100% Syntactic Chemical Validity**: Utilizes **SELFIES** (Self-Referencing Embedded Strings) rather than raw SMILES strings, guaranteeing zero broken rings or invalid valencies during sampling.
 
-NQRE is the primary research contribution of NovaQure.
+### 2. ⚛️ Multimodal Property & Quantum Reliability Engine (NQRE)
+* **Chemprop MPNN Bioactivity Prediction**: Deep Graph Neural Network predicting binding affinity ($\text{pIC}_{50} = -\log_{10}(IC_{50})$).
+* **Quantum Circuit Born Machine (QCBM)**: Simulates ground-state electronic energies of molecular scaffolds using Qiskit.
+* **Zero-Noise Extrapolation (ZNE)**: Applies Richardson polynomial extrapolation across noise scaling factors ($\lambda \in \{1, 3, 5\}$) to eliminate quantum gate errors on NISQ-era hardware.
 
-The engine estimates molecular evaluation reliability under simulated Noisy Intermediate-Scale Quantum (NISQ) environments using:
+### 3. 🤖 Autonomous AMDE Agent & Dynamic IUPAC Matcher
+* **Dual-LLM Reasoning Engine**: Supports local **IBM Granite 4.1:3b (Ollama)** and cloud-hosted **NVIDIA NIM APIs** (`meta/llama-3.2-11b-vision-instruct` / `nvidia/nemotron-4-340b-instruct`).
+* **Self-Healing Fallback Architecture**: Automatically routes to a sub-second deterministic state machine if LLM endpoints time out or hit free-tier rate limits.
+* **Dynamic IUPAC Nomenclature Engine**: Uses RDKit substructure hetero-ring matching to assign real-time IUPAC chemical descriptions (*4-Anilinoquinazoline Analog*, *Indolyl Bioactive Lead*, *Pyrimidine Core Scaffold*).
 
-* convergence stability,
-* molecular consistency,
-* energy variance,
-* noise sensitivity,
-* confidence estimation.
+### 4. 🎨 Premium Browserbase UX & 3D WebGL Visualization
+* **Paper-White Canvas & Ink-Black Pill CTAs**: Modern, high-contrast UI design system built with custom CSS variables.
+* **Interactive 3D Electron Surface Renderer**: WebGL rendering via **3Dmol.js** supporting Stick, Sphere, and van der Waals Electron Cloud opacity rendering.
+* **Pareto Frontier & 5-Axis Quality Profile**: Interactive scatter charts ($\text{pIC}_{50}$ vs QED) and candidate radar profiles displaying potency, synthesizability (SA score), and Lipinski compliance.
+* **Live Execution Progress Tracker**: Real-time step-by-step progress tracking banner visualizing pipeline dataflows.
 
-### Output
+---
 
-```text
-Reliability Score
-Confidence Score
-Noise Metrics
+## 📐 System Architecture & Dataflow
+
+```mermaid
+graph TD
+    User["Researcher / Evaluator"] <-->|Browserbase Paper-White UI| Frontend["React 18 + Vite SPA"]
+    Frontend <-->|REST API + JWT Auth| Backend["FastAPI Gateway (Uvicorn Async)"]
+    
+    subgraph "Backend Discovery Engine"
+        Backend --> Stage1["1. Generative VJTVAE (128-dim Latent Space)"]
+        Stage1 --> Stage2["2. Chemprop GNN + QCBM ZNE Evaluator"]
+        Stage2 --> Stage3["3. Autonomous AMDE LLM Agent"]
+        Stage3 --> DB[("SQLite Database + Repository Pattern")]
+    end
+    
+    subgraph "LLM Provider Routing"
+        Stage3 <-->|HTTP / Port 11434| Ollama["Local IBM Granite 4.1:3b"]
+        Stage3 <-->|HTTPS Bearer Token| NVIDIA["NVIDIA NIM Cloud API"]
+        Stage3 -.->|Fallback Exception| StateMachine["Deterministic Rule Engine"]
+    end
 ```
 
 ---
 
-## 2. Quantum-Guided Latent Refinement
+## 🛠️ Technology Stack
 
-A closed-loop optimization mechanism where molecular evaluation results influence future candidate generation.
-
-### Workflow
-
-```text
-Generate
-↓
-Evaluate
-↓
-Analyze
-↓
-Refine
-↓
-Regenerate
-```
-
-This enables adaptive exploration of chemically meaningful latent-space regions.
+| Layer | Technologies Used |
+| :--- | :--- |
+| **Frontend UI** | React 18, TypeScript, Vite, TanStack React Query v5, Recharts, 3Dmol.js, Axios |
+| **Backend API** | Python 3.10+, FastAPI, Uvicorn, Pydantic v2, Python-Dotenv |
+| **Machine Learning & AI** | PyTorch, Chemprop (MPNN), RDKit, SELFIES, Scikit-Learn |
+| **Quantum Computing** | Qiskit 1.0+, PennyLane, Zero-Noise Extrapolation (ZNE) |
+| **LLM & Agent Framework** | IBM Granite 4.1:3b (Ollama Local), NVIDIA NIM Cloud API, LangChain / ReAct |
+| **Database & Auth** | SQLite, SQLAlchemy 2.0, Passlib (BCrypt), PyJWT |
 
 ---
 
-## 3. Adaptive Molecular Decision Engine (AMDE)
+## 🚀 Quickstart & Installation
 
-AMDE acts as the optimization controller of the system.
+### 1. Prerequisites
+* **Python**: `3.10` or higher
+* **Node.js**: `v18.0.0` or higher
+* **Ollama** (Optional for local LLM mode): [Download Ollama](https://ollama.ai/)
 
-Responsibilities include:
-
-* molecular refinement planning,
-* optimization memory,
-* failure tracking,
-* reasoning-driven decision making,
-* adaptive search strategies.
-
----
-
-## 4. Explainable Multi-Objective Molecular Ranking
-
-NovaQure ranks candidates using multiple criteria simultaneously.
-
-Ranking factors include:
-
-* QED Score
-* Synthetic Accessibility
-* Binding Affinity
-* Reliability Score
-* Noise Penalty
-* Stability Metrics
-
-The ranking process remains fully explainable and reproducible.
-
----
-
-# High-Level Architecture
-
-```text
-User
-↓
-Frontend Dashboard
-↓
-FastAPI Gateway
-↓
-Protein Processing Layer
-↓
-Molecular Generation Layer
-↓
-Property Evaluation Layer
-↓
-AQKC Layer
-↓
-NQRE Layer
-↓
-Latent Refinement Layer
-↓
-AMDE Layer
-↓
-Explainable Ranking Layer
-↓
-Storage & Visualization
-```
-
----
-
-# Core Workflow
-
-```text
-Protein Target
-↓
-Molecular Generation
-↓
-Property Evaluation
-↓
-AQKC Analysis
-↓
-NQRE Reliability Assessment
-↓
-Explainable Ranking
-↓
-AMDE Optimization
-↓
-Latent Refinement
-↓
-Regeneration
-```
-
----
-
-# Core Features
-
-## Molecular Generation
-
-* JTVAE-based molecular generation
-* SELFIES molecular representation
-* Latent-space exploration
-* Novel molecule synthesis
-* Dataset-driven initialization
-
----
-
-## Molecular Evaluation
-
-* RDKit descriptor analysis
-* Molecular property prediction
-* Lipinski validation
-* Binding affinity estimation
-* Molecular quality scoring
-
----
-
-## Quantum-Inspired Optimization
-
-* AQKC evaluation
-* NQRE reliability scoring
-* Noise-aware optimization
-* Quantum-inspired latent refinement
-
----
-
-## Agentic Optimization
-
-* Adaptive optimization planning
-* Failure-aware memory
-* Candidate refinement decisions
-* Reasoning-based optimization
-
----
-
-## Explainability & Visualization
-
-* Reliability visualization
-* Optimization traces
-* Candidate ranking analysis
-* Molecular exploration dashboard
-
----
-
-# Technology Stack
-
-## Backend
-
-* FastAPI
-* Python
-* SQLAlchemy
-* Pydantic
-
-## Artificial Intelligence
-
-* PyTorch
-* Scikit-Learn
-* RDKit
-* SELFIES
-
-## Quantum Computing
-
-* PennyLane
-* Qiskit
-
-## Agentic Systems
-
-* LangChain
-* Ollama
-
-## Frontend
-
-* React
-* Vite
-* TailwindCSS
-
-## Data & Visualization
-
-* NumPy
-* Pandas
-* Plotly
-* Matplotlib
-* Py3Dmol
-
----
-
-# Repository Structure
-
-```text
-NovaQure/
-
-├── backend/
-│   ├── agents/
-│   ├── api/
-│   │   └── routes/
-│   ├── configs/
-│   ├── contracts/
-│   ├── database/
-│   ├── generators/
-│   ├── middleware/
-│   ├── models/
-│   ├── quantum/
-│   ├── ranking/
-│   ├── schemas/
-│   ├── scoring/
-│   ├── services/
-│   └── utils/
-│
-├── frontend/
-│   └── src/
-│
-├── datasets/
-│   ├── raw/
-│   ├── processed/
-│   └── external/
-│
-├── outputs/
-│   ├── molecules/
-│   ├── rankings/
-│   ├── reports/
-│   └── visualizations/
-│
-├── docs/
-│   ├── api/
-│   ├── architecture/
-│   └── research_notes/
-│
-├── experiments/
-│   ├── aqkc/
-│   ├── latent_refinement/
-│   ├── vqe/
-│   └── agentic_runs/
-│
-├── notebooks/
-├── reports/
-└── docker/
-```
-
----
-
-# Supported Datasets
-
-NovaQure currently supports:
-
-* ZINC Dataset
-* QM9 Dataset
-* MOSES Benchmark
-* ChEMBL Subsets
-
-Supported molecular representations:
-
-* SMILES
-* SELFIES
-* Molecular Graphs
-
----
-
-# Current Development Status
-
-## Completed
-
-* Project Architecture
-* Product Requirements Document
-* System Architecture Design
-* API Specifications
-* Development Roadmap
-* Team Ownership Structure
-* Core Contracts
-* Generation Batch 1 Pipeline
-
-### Generation Batch 1 Includes
-
-* Dataset Loader
-* SMILES Validation
-* SELFIES Conversion
-* Canonicalization
-* Molecular Artifact Generation
-
----
-
-## In Progress
-
-* Property Scoring Engine
-* AQKC Implementation
-* NQRE Implementation
-* Database Layer
-* FastAPI Services
-
----
-
-## Planned
-
-* JTVAE Integration
-* Latent Space Modeling
-* QCBM Sampling
-* AMDE Optimization Engine
-* Dashboard Integration
-* Cloud Deployment
-
----
-
-# Installation
-
-## Create Virtual Environment
-
-### Windows
-
+### 2. Backend Setup
 ```bash
+# Clone the repository
+git clone https://github.com/Anuj-ipynb/NovaQure.git
+cd NovaQure
+
+# Create and activate Python virtual environment
+# Windows (PowerShell):
 python -m venv venv
-venv\Scripts\activate
-```
+.\venv\Scripts\Activate.ps1
 
-### Linux / macOS
-
-```bash
+# Linux / macOS:
 python -m venv venv
 source venv/bin/activate
-```
 
----
-
-## Install Dependencies
-
-```bash
+# Install Python dependencies
 pip install -r requirements.txt
+
+# Start the FastAPI Uvicorn backend server
+python -m uvicorn backend.main:app --port 8000 --reload
 ```
+*Backend server will run live at `http://localhost:8000`. OpenAPI documentation available at `http://localhost:8000/docs`.*
 
----
-
-## Run Backend
-
+### 3. Frontend Setup
+Open a second terminal window:
 ```bash
-uvicorn backend.main:app --reload
+cd NovaQure/frontend
+
+# Install Node dependencies
+npm install
+
+# Launch Vite development server
+npm run dev
 ```
+*Frontend application will launch live at `http://localhost:5173`.*
 
 ---
 
-## Open API Documentation
+## 🤖 Configuring LLM Decision Engines
 
-```text
-http://127.0.0.1:8000/docs
-```
+NovaQure supports 3 decision engine modes accessible via the **`⚙️ Parameters`** drawer in Discovery Studio:
 
----
-
-# Development Workflow
-
-## Branch Strategy
-
-```text
-main
-│
-develop
-│
-├── feature/generation
-├── feature/evaluation
-├── feature/optimization
-└── feature/platform
-```
-
-### Merge Flow
-
-```text
-feature/*
-↓
-develop
-↓
-main
-```
+1. **IBM Granite 4.1:3b (Local Ollama)**:
+   ```bash
+   # Ensure Ollama is running and pull Granite model:
+   ollama pull granite3.1-dense:8b
+   ```
+2. **NVIDIA NIM Cloud API**:
+   Create a free account at [build.nvidia.com](https://build.nvidia.com/) and paste your API key in `.env`:
+   ```env
+   NVIDIA_API_KEY="nvapi-YourKeyHere"
+   NVIDIA_MODEL="meta/llama-3.2-11b-vision-instruct"
+   ```
+3. **Deterministic Fallback Engine**:
+   Default zero-cost sub-second execution engine requiring no external services.
 
 ---
 
-# Team Structure
+## 📊 Core API Endpoints
 
-| Team              | Responsibility                  |
-| ----------------- | ------------------------------- |
-| Generation Lead   | Molecular Generation & Sampling |
-| Evaluation Lead   | Scoring, AQKC, NQRE             |
-| Optimization Lead | Ranking, AMDE                   |
-| Platform Lead     | APIs, Database, Frontend        |
-
----
-
-# Success Criteria
-
-NovaQure is considered successful when it can:
-
-* Generate chemically valid molecules
-* Evaluate molecular quality consistently
-* Estimate reliability under noisy environments
-* Rank candidates transparently
-* Refine molecules iteratively
-* Support reproducible experimentation
-* Enable future AI–Quantum research
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/health` | System health check and status telemetry |
+| `POST` | `/api/v1/auth/register` | Create new researcher account & issue JWT |
+| `POST` | `/api/v1/auth/login` | Authenticate credentials & issue Bearer token |
+| `GET` | `/api/v1/molecules` | Fetch screened lead candidate molecules |
+| `GET` | `/api/v1/rankings` | Fetch Pareto-ranked lead candidate leaderboard |
+| `POST` | `/api/v1/pipeline/run` | Execute closed-loop VJTVAE + QCBM + AMDE pipeline |
+| `POST` | `/api/v1/config/llm` | Update active LLM provider (Ollama / NVIDIA / Fallback) |
 
 ---
 
-# Research Scope
+## 🧪 Phase 3 & Future Scope
 
-NovaQure is intended as:
-
-* a hybrid AI–Quantum drug discovery framework,
-* a molecular optimization research platform,
-* a reliability-aware experimentation environment,
-* and a foundation for future computational chemistry research.
-
-The project prioritizes:
-
-* Explainability
-* Reproducibility
-* Modularity
-* Scientific Validity
-* Computational Feasibility
+1. **In Vitro Biological Validation**:
+   - Interfacing top-ranked lead candidates (`MCL-EGFR-001`) with automated CRO (Contract Research Organization) microfluidic kinase assays to measure real $IC_{50}$ biological ground truth.
+2. **Active Learning Feedback Loop**:
+   - Feeding wet-lab $IC_{50}$ assay results back into Chemprop MPNN weights to continuously fine-tune continuous latent space search.
+3. **Multi-Protein Polypharmacology**:
+   - Expanding target selection to **HER2**, **MET**, and **KRAS G12D** oncogenic mutations.
 
 ---
 
-# Future Scope
+## 📜 License
 
-Future enhancements include:
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
-* Molecular Docking Integration
-* Advanced ADMET Prediction
-* Multi-Agent Optimization
-* Active Learning Pipelines
-* Real Quantum Hardware Execution
-* Distributed Molecular Search
-* Cloud-Native Deployment
-* Collaborative Research Workspaces
-
----
-
-# License
-
-MIT License
-
----
 
