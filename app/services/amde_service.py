@@ -80,7 +80,7 @@ class AMDEService:
         confidence = round(sum(a.score for a in assessments) / len(assessments), 2)
 
         # Step 4: Optional Live LLM Insight (Non-blocking fallback)
-        llm_result = self._try_llm_reasoning(comp, decision, reason)
+        llm_result = self._try_llm_reasoning(molecule, comp, decision, reason)
         if llm_result:
             model_name, rec_text = llm_result
             thoughts_and_actions.append(f"Thought (LLM Agent - {model_name}): {rec_text}")
@@ -102,7 +102,7 @@ class AMDEService:
             "thoughts": thoughts_and_actions  # Preserving metadata
         }
 
-    def _try_llm_reasoning(self, comp: Dict, decision: str, reason: str) -> tuple[str, str] | None:
+    def _try_llm_reasoning(self, molecule: Dict, comp: Dict, decision: str, reason: str) -> tuple[str, str] | None:
         """
         Queries the configured LLM provider (NVIDIA Nemotron API or local Ollama)
         for qualitative chemical optimization advice. Times out in 6.0s to ensure fast pipeline runs.
@@ -117,7 +117,7 @@ class AMDEService:
             if info.get("type") == "none":
                 return None
 
-            smiles = comp.get("smiles", "unknown structure")
+            smiles = comp.get("smiles") or molecule.get("smiles") or "candidate structure"
             prompt = (
                 f"As a medicinal chemist, give a 1-sentence recommendation for molecule '{smiles}'. "
                 f"Current evaluation decision: {decision} due to {reason}."

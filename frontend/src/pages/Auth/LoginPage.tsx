@@ -196,7 +196,7 @@ export default function LoginPage() {
               <label style={labelStyle}>Full Name</label>
               <input
                 type="text"
-                placeholder="Dr. Anuj Srinivas"
+                placeholder="Dr. John Doe"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required

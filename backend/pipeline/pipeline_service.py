@@ -124,6 +124,7 @@ class PipelineService:
                     wrapped_merged = {
                         "smiles": mol.smiles,
                         "components": {
+                            "smiles": mol.smiles,
                             "qed": eval_res.qed,
                             "sa_score": eval_res.sa_score,
                             "affinity_score": eval_res.affinity,
