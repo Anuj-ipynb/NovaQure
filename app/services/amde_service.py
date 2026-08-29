@@ -30,6 +30,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Cache for candidate SMILES LLM responses
+_AMDE_LLM_CACHE = {}
+
 class AMDEService:
     def __init__(self):
         self.strategies = {
@@ -58,7 +61,7 @@ class AMDEService:
         assessments.append(affinity_assessment)
         
         # Step 3: Assess QED
-        thoughts_and_actions.append("Thought: Affinity checked. Lastly, I must verify the QED score for drug-likeness.")
+        thoughts_and_actions.append("Thought: Affinity evaluation complete. Finally, I will check the drug-likeness (QED).")
         qed_assessment = self.strategies["qed"].assess(comp)
         thoughts_and_actions.append(f"Action: Query QED -> Score: {qed_assessment.score}, Passed: {qed_assessment.passed}")
         assessments.append(qed_assessment)
@@ -67,15 +70,18 @@ class AMDEService:
         for trace in thoughts_and_actions:
             logger.info("[AMDE ReAct Agent] %s", trace)
 
-        # Decision Strategy Logic
-        decision = "keep"
-        reason = "molecule meets all quality thresholds"
-
-        for assessment in assessments:
-            if not assessment.passed:
-                decision = "regenerate" if assessment.metric == "reliability" else "refine"
-                reason = assessment.reason
-                break
+        # Final Synthesis
+        passed_count = sum(1 for a in assessments if a.passed)
+        if passed_count == 3:
+            decision = "KEEP"
+            reason = "all clinical criteria satisfied"
+        elif passed_count == 2:
+            decision = "REFINE"
+            failed = [a.reason for a in assessments if not a.passed][0]
+            reason = f"borderline performance due to {failed}"
+        else:
+            decision = "REGENERATE"
+            reason = "multiple failed criteria"
 
         confidence = round(sum(a.score for a in assessments) / len(assessments), 2)
 
@@ -105,7 +111,7 @@ class AMDEService:
     def _try_llm_reasoning(self, molecule: Dict, comp: Dict, decision: str, reason: str) -> tuple[str, str] | None:
         """
         Queries the configured LLM provider (NVIDIA Nemotron API or local Ollama)
-        for qualitative chemical optimization advice. Times out in 6.0s to ensure fast pipeline runs.
+        for qualitative chemical optimization advice. Times out in 15.0s to ensure fast pipeline runs.
         """
         try:
             import urllib.request
@@ -118,6 +124,10 @@ class AMDEService:
                 return None
 
             smiles = comp.get("smiles") or molecule.get("smiles") or "candidate structure"
+            cache_key = f"{info['type']}_{info['model']}_{smiles}_{decision}"
+            if cache_key in _AMDE_LLM_CACHE:
+                return _AMDE_LLM_CACHE[cache_key]
+
             prompt = (
                 f"As a medicinal chemist, give a 1-sentence recommendation for molecule '{smiles}'. "
                 f"Current evaluation decision: {decision} due to {reason}."
@@ -148,7 +158,9 @@ class AMDEService:
                         data = json.loads(response.read().decode("utf-8"))
                         text = data["choices"][0]["message"]["content"].strip()
                         print(f"INFO: [AMDE Agent] Live NVIDIA Nemotron response: {text}")
-                        return info["model"], text
+                        res = (info["model"], text)
+                        _AMDE_LLM_CACHE[cache_key] = res
+                        return res
 
             elif info["type"] == "ollama":
                 headers = {"Content-Type": "application/json"}
@@ -157,7 +169,7 @@ class AMDEService:
                     "prompt": prompt,
                     "stream": False,
                     "options": {
-                        "num_predict": 60,
+                        "num_predict": 25,
                         "temperature": 0.2
                     }
                 }
@@ -167,14 +179,16 @@ class AMDEService:
                     headers=headers,
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=6.0) as response:
+                with urllib.request.urlopen(req, timeout=15.0) as response:
                     if response.status == 200:
                         data = json.loads(response.read().decode("utf-8"))
                         text = data.get("response", "").strip()
                         if text and not text.endswith((".", "!", "?")):
                             text += "."
                         print(f"INFO: [AMDE Agent] Live IBM Granite Ollama response: {text}")
-                        return info["model"], text
+                        res = (info["model"], text)
+                        _AMDE_LLM_CACHE[cache_key] = res
+                        return res
         except Exception as exc:
             import urllib.error
             if isinstance(exc, urllib.error.HTTPError):
