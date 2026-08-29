@@ -54,22 +54,12 @@ NovaQure addresses these challenges through a hybrid architecture designed to:
 ## 📐 System Architecture & Dataflow
 
 ```mermaid
-graph TD
-    User["Researcher / Evaluator"] <-->|Browserbase Paper-White UI| Frontend["React 18 + Vite SPA"]
-    Frontend <-->|REST API + JWT Auth| Backend["FastAPI Gateway (Uvicorn Async)"]
-    
-    subgraph "Backend Discovery Engine"
-        Backend --> Stage1["1. Generative VJTVAE (128-dim Latent Space)"]
-        Stage1 --> Stage2["2. Chemprop GNN + QCBM ZNE Evaluator"]
-        Stage2 --> Stage3["3. Autonomous AMDE LLM Agent"]
-        Stage3 --> DB[("SQLite Database + Repository Pattern")]
-    end
-    
-    subgraph "LLM Provider Routing"
-        Stage3 <-->|HTTP / Port 11434| Ollama["Local IBM Granite 4.1:3b"]
-        Stage3 <-->|HTTPS Bearer Token| NVIDIA["NVIDIA NIM Cloud API"]
-        Stage3 -.->|Fallback Exception| StateMachine["Deterministic Rule Engine"]
-    end
+graph LR
+    A["💻 React Frontend UI"] -->|1. Trigger Discovery| B["⚡ FastAPI Gateway"]
+    B --> C["🧬 1. VJTVAE Sampler<br/>(128-dim Latent Space)"]
+    C --> D["⚛️ 2. Quantum & Bioactivity<br/>(Chemprop GNN + QCBM ZNE)"]
+    D --> E["🤖 3. AMDE Agent<br/>(IBM Granite / NVIDIA NIM)"]
+    E -->|4. Store & Display| F["📊 Lead Leaderboard & 3D Surface"]
 ```
 
 ---
