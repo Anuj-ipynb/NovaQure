@@ -1,4 +1,4 @@
-# NovaQure 🧬⚛️
+# NovaQure
 
 ### **Noise-Adaptive Hybrid AI–Quantum Framework for Targeted Oncology Drug Discovery**
 
@@ -15,7 +15,7 @@ Unlike legacy pipelines that rely solely on static generation or unverified scor
 
 ---
 
-## 🎯 Research Motivation & Vision
+## Research Motivation & Vision
 
 Traditional drug discovery pipelines suffer from extensive molecular search spaces ($> 10^{60}$ potential structures), high laboratory synthesis costs, long optimization cycles (10+ years), and low candidate clinical success rates.
 
@@ -27,23 +27,23 @@ NovaQure addresses these challenges through a hybrid architecture designed to:
 
 ---
 
-## 🌟 Core System Features & Innovations
+## Core System Features & Innovations
 
-### 1. 🧬 Generative Molecular Engine (VJTVAE + SELFIES)
+### 1. Generative Molecular Engine (VJTVAE + SELFIES)
 * **128-Dimensional Continuous Latent Space**: Initialized from **10,833 ChEMBL EGFR bioactive compounds**.
 * **100% Syntactic Chemical Validity**: Utilizes **SELFIES** (Self-Referencing Embedded Strings) rather than raw SMILES strings, guaranteeing zero broken rings or invalid valencies during sampling.
 
-### 2. ⚛️ Multimodal Property & Quantum Reliability Engine (NQRE)
+### 2. Multimodal Property & Quantum Reliability Engine (NQRE)
 * **Chemprop MPNN Bioactivity Prediction**: Deep Graph Neural Network predicting binding affinity ($\text{pIC}_{50} = -\log_{10}(IC_{50})$).
 * **Quantum Circuit Born Machine (QCBM)**: Simulates ground-state electronic energies of molecular scaffolds using Qiskit.
 * **Zero-Noise Extrapolation (ZNE)**: Applies Richardson polynomial extrapolation across noise scaling factors ($\lambda \in \{1, 3, 5\}$) to eliminate quantum gate errors on NISQ-era hardware.
 
-### 3. 🤖 Autonomous AMDE Agent & Dynamic IUPAC Matcher
+### 3. Autonomous AMDE Agent & Dynamic IUPAC Matcher
 * **Dual-LLM Reasoning Engine**: Supports local **IBM Granite 4.1:3b (Ollama)** and cloud-hosted **NVIDIA NIM APIs** (`meta/llama-3.2-11b-vision-instruct` / `nvidia/nemotron-4-340b-instruct`).
 * **Self-Healing Fallback Architecture**: Automatically routes to a sub-second deterministic state machine if LLM endpoints time out or hit free-tier rate limits.
 * **Dynamic IUPAC Nomenclature Engine**: Uses RDKit substructure hetero-ring matching to assign real-time IUPAC chemical descriptions (*4-Anilinoquinazoline Analog*, *Indolyl Bioactive Lead*, *Pyrimidine Core Scaffold*).
 
-### 4. 🎨 Premium Browserbase UX & 3D WebGL Visualization
+### 4. User Interface & 3D WebGL Visualization
 * **Paper-White Canvas & Ink-Black Pill CTAs**: Modern, high-contrast UI design system built with custom CSS variables.
 * **Interactive 3D Electron Surface Renderer**: WebGL rendering via **3Dmol.js** supporting Stick, Sphere, and van der Waals Electron Cloud opacity rendering.
 * **Pareto Frontier & 5-Axis Quality Profile**: Interactive scatter charts ($\text{pIC}_{50}$ vs QED) and candidate radar profiles displaying potency, synthesizability (SA score), and Lipinski compliance.
@@ -51,20 +51,20 @@ NovaQure addresses these challenges through a hybrid architecture designed to:
 
 ---
 
-## 📐 System Architecture & Dataflow
+## System Architecture & Dataflow
 
 ```mermaid
 graph LR
-    A["💻 React Frontend UI"] -->|1. Trigger Discovery| B["⚡ FastAPI Gateway"]
-    B --> C["🧬 1. VJTVAE Sampler<br/>(128-dim Latent Space)"]
-    C --> D["⚛️ 2. Quantum & Bioactivity<br/>(Chemprop GNN + QCBM ZNE)"]
-    D --> E["🤖 3. AMDE Agent<br/>(IBM Granite / NVIDIA NIM)"]
-    E -->|4. Store & Display| F["📊 Lead Leaderboard & 3D Surface"]
+    A["React Frontend UI"] -->|1. Trigger Discovery| B["FastAPI Gateway"]
+    B --> C["1. VJTVAE Sampler<br/>(128-dim Latent Space)"]
+    C --> D["2. Quantum & Bioactivity<br/>(Chemprop GNN + QCBM ZNE)"]
+    D --> E["3. AMDE Agent<br/>(IBM Granite / NVIDIA NIM)"]
+    E -->|4. Store & Display| F["Lead Leaderboard & 3D Surface"]
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technologies Used |
 | :--- | :--- |
@@ -77,7 +77,7 @@ graph LR
 
 ---
 
-## 🚀 Quickstart & Installation
+## Quickstart & Installation
 
 ### 1. Prerequisites
 * **Python**: `3.10` or higher
@@ -122,9 +122,9 @@ npm run dev
 
 ---
 
-## 🤖 Configuring LLM Decision Engines
+## Configuring LLM Decision Engines
 
-NovaQure supports 3 decision engine modes accessible via the **`⚙️ Parameters`** drawer in Discovery Studio:
+NovaQure supports 3 decision engine modes accessible via the **Parameters** drawer in Discovery Studio:
 
 1. **IBM Granite 4.1:3b (Local Ollama)**:
    ```bash
@@ -142,7 +142,7 @@ NovaQure supports 3 decision engine modes accessible via the **`⚙️ Parameter
 
 ---
 
-## 📊 Core API Endpoints
+## Core API Endpoints
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
@@ -156,7 +156,7 @@ NovaQure supports 3 decision engine modes accessible via the **`⚙️ Parameter
 
 ---
 
-## 🧪 Phase 3 & Future Scope
+## Future Scope & Roadmap
 
 1. **In Vitro Biological Validation**:
    - Interfacing top-ranked lead candidates (`MCL-EGFR-001`) with automated CRO (Contract Research Organization) microfluidic kinase assays to measure real $IC_{50}$ biological ground truth.
@@ -167,8 +167,6 @@ NovaQure supports 3 decision engine modes accessible via the **`⚙️ Parameter
 
 ---
 
-## 📜 License
+## License
 
 Distributed under the **MIT License**. See `LICENSE` for more information.
-
-
