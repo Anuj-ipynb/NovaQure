@@ -4,8 +4,20 @@ import { useMolecules } from "../../hooks/molecules/useMolecules";
 import { useRunPipeline } from "../../hooks/pipeline/useRunPipeline";
 import MoleculeViewer3D from "../../components/molecules/MoleculeViewer3D";
 import CandidateRadarChart from "../../components/charts/CandidateRadarChart";
+import { TargetSelector } from "../../components/TargetSelector";
+import { SelectivityRadar } from "../../components/SelectivityRadar";
 import Tooltip from "../../components/common/Tooltip";
 import api from "../../api/client";
+import { sanitizeSmiles } from "../../utils/smilesSanitizer";
+import { getMockCandidatesForTarget } from "../../utils/targetMockData";
+
+const TARGET_DETAILS: Record<string, { name: string; indication: string; count: string }> = {
+    EGFR: { name: "Epidermal Growth Factor Receptor", indication: "Non-Small Cell Lung Cancer & Glioblastoma", count: "10,833 ChEMBL Bioactives" },
+    KRAS: { name: "GTPase KRas (G12D/G12C)", indication: "Pancreatic, Colorectal & NSCLC Cancers", count: "4,294 ChEMBL Bioactives" },
+    BACE1: { name: "Beta-Site APP Cleaving Enzyme 1", indication: "Alzheimer's Disease & Amyloid Pathology", count: "3,418 ChEMBL Bioactives" },
+    HER2: { name: "Human EGF Receptor 2 (ERBB2)", indication: "HER2+ Breast Cancer & Gastric Cancers", count: "4,520 ChEMBL Bioactives" },
+    BRAF: { name: "Serine/Threonine-Protein Kinase B-Raf", indication: "Melanoma, Thyroid & Colorectal Cancers", count: "2,980 ChEMBL Bioactives" },
+};
 
 export default function MoleculesPage() {
     const { isLoading, error } = useMolecules();
@@ -20,6 +32,22 @@ export default function MoleculesPage() {
     
     // LLM Provider state
     const [llmProvider, setLlmProvider] = useState("granite");
+
+    // Active Target Protein state (Persisted across tab transitions)
+    const [selectedTarget, setSelectedTarget] = useState<string>(() => {
+        try {
+            return localStorage.getItem("novaqure_active_target") || "EGFR";
+        } catch {
+            return "EGFR";
+        }
+    });
+
+    const handleSelectTarget = (targetId: string) => {
+        setSelectedTarget(targetId);
+        try {
+            localStorage.setItem("novaqure_active_target", targetId);
+        } catch {}
+    };
 
     useEffect(() => {
         api.get("/api/v1/config/llm")
@@ -85,7 +113,8 @@ export default function MoleculesPage() {
                 energy,
                 variance,
                 noise,
-                convergence
+                convergence,
+                target_protein: selectedTarget,
             });
             setRunResults(data);
         } catch (err) {
@@ -110,25 +139,33 @@ export default function MoleculesPage() {
         );
     }
 
-    const activeList = runResults ? runResults.results : [];
+    const activeTargetInfo = TARGET_DETAILS[selectedTarget] || TARGET_DETAILS["EGFR"];
+
+    let activeList = [];
+    if (runResults && runResults.results && (runResults.target_protein === selectedTarget || !runResults.target_protein)) {
+        activeList = runResults.results;
+    } else {
+        activeList = getMockCandidatesForTarget(selectedTarget);
+    }
 
     return (
         <div>
             {/* Editorial Header Section */}
             <div style={{ marginBottom: 40, borderBottom: "1px solid var(--color-lavender-mist)", paddingBottom: 32 }}>
-                <span
-                    style={{
-                        fontFamily: "var(--font-gtstandardmono)",
-                        fontSize: 12,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                        color: "var(--color-graphite)",
-                        display: "block",
-                        marginBottom: 12,
-                    }}
-                >
-                    DISCOVERY STUDIO // TARGET: EGFR ONCOLOGY
-                </span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <span
+                        style={{
+                            fontFamily: "var(--font-gtstandardmono)",
+                            fontSize: 12,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.06em",
+                            color: "var(--color-graphite)",
+                        }}
+                    >
+                        DISCOVERY STUDIO // ACTIVE TARGET: {selectedTarget} ({activeTargetInfo.name})
+                    </span>
+                    <TargetSelector selectedTarget={selectedTarget} onSelectTarget={setSelectedTarget} />
+                </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20 }}>
                     <div>
@@ -155,7 +192,7 @@ export default function MoleculesPage() {
                             </span>
                         </h1>
                         <p style={{ color: "var(--color-graphite)", marginTop: 10, fontSize: 16 }}>
-                            Screen candidate bioactives against EGFR target proteins via closed-loop AI/Quantum pipeline.
+                            Screen candidate bioactives against {activeTargetInfo.name} ({selectedTarget}) target proteins via closed-loop AI/Quantum pipeline.
                         </p>
                     </div>
 
@@ -222,7 +259,7 @@ export default function MoleculesPage() {
                             </span>
                         </div>
                         <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-graphite)" }}>
-                            Target: EGFR Kinase (NSCLC Lung Cancer)
+                            Target: {selectedTarget} - {activeTargetInfo.name} ({activeTargetInfo.indication})
                         </span>
                     </div>
 
@@ -362,7 +399,7 @@ export default function MoleculesPage() {
                         Target Workspace Ready
                     </h2>
                     <p style={{ color: "var(--color-graphite)", fontSize: 15, maxWidth: 540, lineHeight: 1.5 }}>
-                        Loaded <strong>EGFR Oncology Target Dataset</strong> (10,833 ChEMBL Bioactives). Click below to launch VJTVAE + QCBM quantum-generative optimization.
+                        Loaded <strong>{activeTargetInfo.name} ({selectedTarget}) Target Dataset</strong> ({activeTargetInfo.count}). Click below to launch VJTVAE + QCBM quantum-generative optimization.
                     </p>
                     <button
                         onClick={handleRunPipeline}
@@ -408,6 +445,7 @@ export default function MoleculesPage() {
                                 explanation={mol.explanation}
                                 iteration={mol.iteration}
                                 isPipeline={isPipelineResult}
+                                primaryTarget={selectedTarget}
                             />
                         );
                     })}
@@ -465,7 +503,8 @@ function MoleculeCard({
     decision,
     explanation,
     iteration,
-    isPipeline,
+    isPipeline = false,
+    primaryTarget = "EGFR",
 }: {
     id: string;
     smiles: string;
@@ -474,11 +513,13 @@ function MoleculeCard({
     decision?: any;
     explanation?: any;
     iteration?: number;
-    isPipeline: boolean;
+    isPipeline?: boolean;
+    primaryTarget?: string;
 }) {
     const [expanded, setExpanded] = useState(false);
     const [showModal3D, setShowModal3D] = useState(false);
 
+    const cleanSmiles = sanitizeSmiles(smiles);
     const qedVal = evaluation?.qed ?? 0.74;
     const saVal = evaluation?.sa_score ?? 2.85;
 
@@ -509,7 +550,7 @@ function MoleculeCard({
             {/* Header badges */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "var(--color-graphite)", fontFamily: "var(--font-gtstandardmono)" }}>
-                    ID: {id?.slice(0, 8) || "N/A"}
+                    ID: {id?.slice(0, 8) || "N/A"} {isPipeline ? "• Closed-Loop" : ""}
                 </span>
 
                 {decision && decStyle && (
@@ -551,7 +592,7 @@ function MoleculeCard({
                         fontFamily: "var(--font-gtstandardmono)",
                     }}
                 >
-                    {smiles}
+                    {cleanSmiles}
                 </span>
             </div>
 
@@ -619,30 +660,30 @@ function MoleculeCard({
                     🔍 3D Model
                 </button>
 
-                {isPipeline && (
-                    <button
-                        onClick={() => setExpanded(!expanded)}
-                        style={{
-                            border: "none",
-                            background: "none",
-                            color: "var(--color-graphite)",
-                            cursor: "pointer",
-                            fontSize: 12,
-                            fontWeight: 500,
-                        }}
-                    >
-                        {expanded ? "Hide Details" : "Details ▾"}
-                    </button>
-                )}
+                <button
+                    onClick={() => setExpanded(!expanded)}
+                    style={{
+                        border: "none",
+                        background: "none",
+                        color: "var(--color-graphite)",
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: 500,
+                    }}
+                >
+                    {expanded ? "Hide Details" : "Selectivity & Metrics ▾"}
+                </button>
             </div>
 
             {/* Collapsible Details */}
             {expanded && (
-                <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8, background: "var(--color-faint-slate)", padding: 12, borderRadius: 4, border: "1px solid var(--color-lavender-mist)" }}>
+                <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 12, background: "var(--color-faint-slate)", padding: 12, borderRadius: 4, border: "1px solid var(--color-lavender-mist)" }}>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
                         <MetricCard label="QED Index" value={qedVal.toFixed(2)} />
                         <MetricCard label="SA Score" value={saVal.toFixed(2)} />
                     </div>
+
+                    <SelectivityRadar smiles={cleanSmiles} primaryTarget={primaryTarget} />
 
                     {explanation?.reason && (
                         <div style={{ fontSize: 12, color: "var(--color-graphite)", lineHeight: 1.4 }}>
@@ -653,7 +694,7 @@ function MoleculeCard({
             )}
 
             {/* WebGL 3D Modal Viewer */}
-            {showModal3D && <MoleculeViewer3D smiles={smiles} iupacName={evaluation?.iupac_name} onClose={() => setShowModal3D(false)} />}
+            {showModal3D && <MoleculeViewer3D smiles={cleanSmiles} iupacName={evaluation?.iupac_name} onClose={() => setShowModal3D(false)} />}
         </div>
     );
 }

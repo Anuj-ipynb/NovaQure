@@ -23,7 +23,7 @@ class GenerationConfig:
         "experiment_metadata.json"
     )
 
-    MAX_MOLECULES = 5
+    MAX_MOLECULES = 7
 
     EXPORT_LATENT_VECTORS = False
 

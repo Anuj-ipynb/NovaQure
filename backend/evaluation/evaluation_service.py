@@ -95,11 +95,12 @@ class EvaluationService:
         variance: float,
         noise: float,
         convergence: float,
+        target_protein: str | None = None,
     ) -> EvaluationResult:
         """
         Execute the comprehensive end-to-end evaluation pipeline.
         """
-        logger.info("Commencing pipeline execution sequence for SMILES: %s", smiles)
+        logger.info("Commencing pipeline execution sequence for SMILES: %s (Target: %s)", smiles, target_protein or "EGFR")
 
         # Step 1: Classical Cheminformatics Profiling
         qed_score = self.qed.calculate_qed(smiles)
@@ -108,7 +109,7 @@ class EvaluationService:
         iupac_name = self.iupac.resolve(smiles)
 
         # Step 2: Deep Learning Bioactivity Inference
-        affinity = self.affinity.predict(smiles)
+        affinity = self.affinity.predict(smiles, target_protein=target_protein)
 
         # Step 3: Adaptive Quantum Knowledge Correction (AQKC)
         aqkc_result = self.aqkc.correct(
@@ -153,6 +154,7 @@ class EvaluationService:
         variance: float,
         noise: float,
         convergence: float,
+        target_protein: str | None = None,
     ) -> list[EvaluationResult]:
         """
         Execute vectorized batch evaluation using a single Chemprop CLI prediction pass.
@@ -161,7 +163,7 @@ class EvaluationService:
             return []
 
         # Step 1: Vectorized Chemprop Batch Inference
-        affinities = self.affinity.predict_batch(smiles_list)
+        affinities = self.affinity.predict_batch(smiles_list, target_protein=target_protein)
 
         results = []
         for idx, smiles in enumerate(smiles_list):

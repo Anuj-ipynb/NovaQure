@@ -15,6 +15,8 @@ from .reliability import router as reliability_router
 from .generation import router as generation_router
 from .evaluation import router as evaluation_router
 from .pipeline import router as pipeline_router
+from .proteins import router as proteins_router
+
 __all__ = [
     "auth_router",
     "health_router",
@@ -25,5 +27,6 @@ __all__ = [
     "reliability_router",
     "generation_router",
     "evaluation_router",
-    "pipeline_router"
+    "pipeline_router",
+    "proteins_router",
 ]

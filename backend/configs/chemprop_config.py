@@ -39,6 +39,8 @@ VALIDATION_SPLIT = 0.10
 
 TEST_SPLIT = 0.10
 
+SPLIT_TYPE = "SCAFFOLD_BALANCED"
+
 RANDOM_SEED = 42
 
 # ==========================================================
@@ -54,6 +56,14 @@ BATCH_SIZE = 64
 LEARNING_RATE = 1e-3
 
 WEIGHT_DECAY = 0.0
+
+ENSEMBLE_SIZE = 5
+
+DROPOUT = 0.1
+
+PATIENCE = 10
+
+MOLECULE_FEATURIZERS = ["v1_rdkit_2d_normalized"]
 
 # ==========================================================
 # Model

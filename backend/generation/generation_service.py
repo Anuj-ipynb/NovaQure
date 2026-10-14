@@ -46,14 +46,13 @@ class GenerationService:
     - Save experiment artifacts
     """
 
-    def run(self):
+    def run(self, target_protein: str | None = None):
 
         start_time = time.perf_counter()
 
         raw_smiles = load_smiles_dataset(
-            str(
-                GenerationConfig.DATASET_PATH
-            )
+            file_path=str(GenerationConfig.DATASET_PATH),
+            target_protein=target_protein,
         )
 
         subset = raw_smiles[: GenerationConfig.MAX_MOLECULES * 2]

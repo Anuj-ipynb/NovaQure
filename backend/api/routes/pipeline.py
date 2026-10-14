@@ -15,6 +15,7 @@ class PipelineRequest(BaseModel):
     variance: float = 0.12
     noise: float = 0.08
     convergence: float = 0.93
+    target_protein: str = "EGFR"
 
 
 @router.post("/run")
@@ -30,6 +31,7 @@ async def run_pipeline(
             variance=request.variance,
             noise=request.noise,
             convergence=request.convergence,
+            target_protein=request.target_protein,
         )
 
     except Exception as exc:

@@ -1,0 +1,14 @@
+{
+    "dataset": "D:\\Area 51\\NovaQure\\datasets\\external\\chembl\\processed\\KRAS.csv",
+    "model_directory": "D:\\Area 51\\NovaQure\\backend\\models\\chemprop",
+    "model_path": "D:\\Area 51\\NovaQure\\backend\\models\\chemprop\\kras_model.pt",
+    "task": "regression",
+    "epochs": 50,
+    "batch_size": 64,
+    "split": {
+        "train": 0.8,
+        "validation": 0.1,
+        "test": 0.1
+    },
+    "random_seed": 42
+}

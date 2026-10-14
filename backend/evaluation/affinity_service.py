@@ -30,6 +30,7 @@ from rdkit import Chem
 
 from backend.configs.chemprop_config import (
     SMILES_COLUMN,
+    MOLECULE_FEATURIZERS,
 )
 
 logger = logging.getLogger(__name__)
@@ -125,6 +126,10 @@ class AffinityService:
             SMILES_COLUMN,
         ]
 
+        # Dynamically check model file size (>1.4MB = 500-dim with RDKit 2D features; <1.4MB = 300-dim pure GNN)
+        if MOLECULE_FEATURIZERS and self.model_path and self.model_path.exists() and self.model_path.stat().st_size > 1400000:
+            command.extend(["--molecule-featurizers"] + MOLECULE_FEATURIZERS)
+
         try:
             import os
             # Ensure the virtual environment's bin/Scripts folder is in PATH and KMP_DUPLICATE_LIB_OK is set for Windows PyTorch
@@ -214,7 +219,11 @@ class AffinityService:
     # Prediction Interface Methods
     # ---------------------------------------------------------
 
-    def predict_batch(self, smiles_list: list[str]) -> list[float]:
+    def predict_batch(
+        self,
+        smiles_list: list[str],
+        target_protein: str | None = None,
+    ) -> list[float]:
         """
         Predict affinity scores for a collection of molecular SMILES structures.
         """
@@ -226,12 +235,18 @@ class AffinityService:
             if not smiles or not isinstance(smiles, str) or Chem.MolFromSmiles(smiles) is None:
                 raise ValueError(f"Invalid or corrupted SMILES string rejected: '{smiles}'")
 
-        if self.model_path is None:
-            # Fallback return: return neutral affinity scores
-            return [0.5] * len(smiles_list)
+        target_model = self._find_model(target_protein) if target_protein else self.model_path
+
+        if target_model is None or not target_model.exists():
+            # Fallback return: return neutral/realistic affinity scores (pIC50 ~ 6.5)
+            return [6.5] * len(smiles_list)
 
         input_csv = self._create_input_csv(smiles_list)
         output_csv = self._create_output_path()
+
+        # Save existing model_path, swap to target_model, run prediction, restore
+        orig_model = self.model_path
+        self.model_path = target_model
 
         try:
             self._run_prediction(input_csv, output_csv)
@@ -239,16 +254,21 @@ class AffinityService:
             return predictions
 
         finally:
+            self.model_path = orig_model
             self._cleanup(input_csv, output_csv)
 
-    def predict(self, smiles: str) -> float:
+    def predict(
+        self,
+        smiles: str,
+        target_protein: str | None = None,
+    ) -> float:
         """
         Predict the affinity score of a single molecular SMILES structure.
         """
         if not smiles or not isinstance(smiles, str) or Chem.MolFromSmiles(smiles) is None:
             raise ValueError(f"Invalid or corrupted SMILES string rejected: '{smiles}'")
 
-        prediction = self.predict_batch([smiles])
+        prediction = self.predict_batch([smiles], target_protein=target_protein)
         return prediction[0]
 
     # ---------------------------------------------------------

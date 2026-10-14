@@ -128,6 +128,7 @@ class ChempropDatasetBuilder:
     def build_dataset(
         self,
         protein_name: str,
+        target_chembl_id: str | None = None,
     ) -> pd.DataFrame:
         """
         Build a Chemprop dataset for a target protein.
@@ -135,6 +136,7 @@ class ChempropDatasetBuilder:
         Parameters
         ----------
         protein_name : str
+        target_chembl_id : str | None
 
         Returns
         -------
@@ -142,26 +144,29 @@ class ChempropDatasetBuilder:
         """
 
         logger.info(
-            "Building Chemprop dataset for %s",
+            "Building Chemprop dataset for %s (ChEMBL ID: %s)",
             protein_name,
+            target_chembl_id or "auto-search",
         )
 
-        targets = self.api.search_target(protein_name)
+        if target_chembl_id:
+            target_id = target_chembl_id
+        else:
+            targets = self.api.search_target(protein_name)
 
-        if not targets:
-            raise RuntimeError(
-                f"No ChEMBL targets found for '{protein_name}'."
+            if not targets:
+                raise RuntimeError(
+                    f"No ChEMBL targets found for '{protein_name}'."
+                )
+
+            target_id = targets[0].chembl_id
+            logger.info(
+                "Selected target %s (%s)",
+                targets[0].chembl_id,
+                targets[0].name,
             )
 
-        target = targets[0]
-
-        logger.info(
-            "Using target %s (%s)",
-            target.chembl_id,
-            target.name,
-        )
-
-        records = self.api.fetch_activity_records(target.chembl_id)
+        records = self.api.fetch_activity_records(target_id)
 
         logger.info(
             "Retrieved %d raw activity records.",
@@ -221,7 +226,8 @@ class ChempropDatasetBuilder:
                 if pic50 is None:
                     continue
 
-            if pic50 < 0 or pic50 > 15:
+            # Strictly bound pIC50 between 3.0 (1 mM) and 11.0 (10 pM) to filter bioassay noise/outliers
+            if pic50 < 3.0 or pic50 > 11.0:
                 continue
 
             rows.append(
@@ -328,13 +334,15 @@ class ChempropDatasetBuilder:
     def build_and_save(
         self,
         protein_name: str,
+        target_chembl_id: str | None = None,
     ) -> Path:
         """
         Build a dataset and save it as CSV.
         """
 
         dataframe = self.build_dataset(
-            protein_name
+            protein_name=protein_name,
+            target_chembl_id=target_chembl_id,
         )
 
         return self.save_dataset(

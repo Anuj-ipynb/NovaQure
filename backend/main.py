@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes import (
     generation_router,
     evaluation_router,
-    pipeline_router
+    pipeline_router,
+    proteins_router,
 )
 
 from backend.api.routes import (
@@ -159,6 +160,10 @@ app.include_router(
 )
 app.include_router(
     pipeline_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    proteins_router,
     prefix="/api/v1",
 )
 

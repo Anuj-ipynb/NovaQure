@@ -5,6 +5,7 @@ export interface PipelineParams {
   variance: number;
   noise: number;
   convergence: number;
+  target_protein?: string;
 }
 
 export async function runPipeline(params: PipelineParams) {

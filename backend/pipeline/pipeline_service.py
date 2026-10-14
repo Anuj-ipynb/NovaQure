@@ -40,6 +40,7 @@ class PipelineService:
         variance: float = 0.12,
         noise: float = 0.08,
         convergence: float = 0.93,
+        target_protein: str = "EGFR",
     ) -> Dict:
 
         db = SessionLocal()
@@ -74,7 +75,7 @@ class PipelineService:
             db_experiment = DBExperiment(
                 id=experiment_id,
                 project_id=db_project.id,
-                target_protein="EGFR",
+                target_protein=target_protein.upper(),
                 iterations=max_iterations,
                 status="completed"
             )
@@ -82,7 +83,7 @@ class PipelineService:
             db.commit()
 
             # Initialize first-generation candidates
-            current_molecules = self.generator.run()
+            current_molecules = self.generator.run(target_protein=target_protein.upper())
             final_results: List[Dict] = []
 
             # Step 3: Closed-loop Iterative Optimization Loop
@@ -98,6 +99,7 @@ class PipelineService:
                     variance=variance,
                     noise=noise,
                     convergence=convergence,
+                    target_protein=target_protein.upper(),
                 )
                 evaluations = list(zip(current_molecules, eval_batch))
 
@@ -231,6 +233,7 @@ class PipelineService:
 
             return {
                 "experiment_id": experiment_id,
+                "target_protein": target_protein.upper(),
                 "generated_count": len(final_results),
                 "evaluated_count": len(final_results),
                 "results": final_results,

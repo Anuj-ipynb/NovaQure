@@ -35,9 +35,14 @@ from backend.configs.chemprop_config import (
     TRAIN_SPLIT,
     VALIDATION_SPLIT,
     TEST_SPLIT,
+    SPLIT_TYPE,
     RANDOM_SEED,
     EPOCHS,
     BATCH_SIZE,
+    ENSEMBLE_SIZE,
+    DROPOUT,
+    PATIENCE,
+    MOLECULE_FEATURIZERS,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,8 +56,10 @@ class ChempropTrainer:
     def __init__(
         self,
         dataset_path: Path = DEFAULT_DATASET,
+        target_name: str | None = None,
     ) -> None:
         self.dataset_path = Path(dataset_path)
+        self.target_name = target_name
         self.model_path: Path | None = None
 
         MODEL_DIRECTORY.mkdir(
@@ -113,9 +120,9 @@ class ChempropTrainer:
 
     def build_command(self) -> list[str]:
         """
-        Build the Chemprop CLI command.
+        Build the Chemprop CLI command with ensemble, RDKit features, scaffold split, and regularization.
         """
-        return [
+        cmd = [
             "chemprop",
             "train",
             "-i",
@@ -133,11 +140,17 @@ class ChempropTrainer:
             "--epochs",
             str(EPOCHS),
             "--split",
-            "RANDOM",
+            SPLIT_TYPE,
             "--split-sizes",
             str(TRAIN_SPLIT),
             str(VALIDATION_SPLIT),
             str(TEST_SPLIT),
+            "--ensemble-size",
+            str(ENSEMBLE_SIZE),
+            "--dropout",
+            str(DROPOUT),
+            "--patience",
+            str(PATIENCE),
             "--data-seed",
             str(RANDOM_SEED),
             "--metrics",
@@ -145,6 +158,11 @@ class ChempropTrainer:
             "mae",
             "r2",
         ]
+
+        if MOLECULE_FEATURIZERS:
+            cmd.extend(["--molecule-featurizers"] + MOLECULE_FEATURIZERS)
+
+        return cmd
 
     # ---------------------------------------------------------
     # Train Model
@@ -194,22 +212,23 @@ class ChempropTrainer:
                 "Chemprop training execution failed."
             ) from exc
 
-        # Isolate new best.pt files generated exclusively during this run
-        new_models = [
-            p
-            for p in MODEL_DIRECTORY.rglob("best.pt")
-            if p not in existing_models
-        ]
-
-        if not new_models:
+        # Locate the best.pt file generated during training
+        all_models = list(MODEL_DIRECTORY.rglob("best.pt"))
+        if not all_models:
             raise FileNotFoundError(
-                "Chemprop training completed but no new model artifact (best.pt) was created."
+                "Chemprop training completed but no model artifact (best.pt) was created."
             )
 
-        # Fallback sort by modification time if multiple version paths conflict
-        new_models.sort(key=lambda p: p.stat().st_mtime, reverse=True)
-        self.model_path = new_models[0]
+        all_models.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+        self.model_path = all_models[0]
         
+        if self.target_name:
+            import shutil
+            target_model_file = MODEL_DIRECTORY / f"{self.target_name.lower()}_model.pt"
+            shutil.copy2(self.model_path, target_model_file)
+            logger.info("Saved target-specific model artifact to %s", target_model_file)
+            self.model_path = target_model_file
+
         logger.info("Best model saved at %s", self.model_path)
 
     # ---------------------------------------------------------

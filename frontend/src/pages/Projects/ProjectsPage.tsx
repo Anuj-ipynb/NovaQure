@@ -107,13 +107,13 @@ export default function ProjectsPage() {
                 />
 
                 <StatCard
-                    title="Primary Target"
-                    value="EGFR (Oncology)"
+                    title="Active Target Panel"
+                    value="Multi-Target (5 Proteins)"
                 />
 
                 <StatCard
                     title="Data Source"
-                    value="ChEMBL (10.8k bioactives)"
+                    value="ChEMBL (EGFR/KRAS/BACE1/HER2/BRAF)"
                 />
             </div>
 
