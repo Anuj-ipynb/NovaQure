@@ -49,3 +49,12 @@ Thumbs.db
 artifacts/
 .aider*
 
+
+# Cleanup rules
+*.zip
+*.sqlite
+*.db
+scratch_*.py
+__pycache__/
+.pytest_cache/
+.env
