@@ -147,7 +147,7 @@ A LangChain ReAct (Reasoning + Acting) agent orchestrates the closed-loop optimi
 
 | Layer | Technologies |
 |:---|:---|
-| **Frontend** | React 19 · TypeScript · Vite · TanStack Query v5 · Recharts · 3Dmol.js |
+| **Frontend** | React 19 · TypeScript · Vite · TanStack Query v5 · Plotly.js · 3Dmol.js |
 | **Backend API** | Python 3.10+ · FastAPI · Uvicorn · Pydantic v2 · SQLAlchemy 2.0 |
 | **Machine Learning** | PyTorch 2.4 · Chemprop (D-MPNN) · RDKit · SELFIES · Scikit-learn |
 | **Quantum Computing** | PennyLane 0.38 · Qiskit 1.0 · Zero-Noise Extrapolation (ZNE) |
@@ -199,8 +199,11 @@ npm run dev
 ### 4. (Optional) Docker
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
+> Discovery Studio (Docker) → [http://localhost:3000](http://localhost:3000)  
+> API Docs (Docker) → [http://localhost:8000/docs](http://localhost:8000/docs)  
+> Includes automated Cloudflare Tunnel (`cloudflare/cloudflared`) for remote access.
 
 ---
 
@@ -210,7 +213,7 @@ NovaQure supports 3 decision engine modes, switchable from the **Parameters** dr
 
 | Mode | Setup |
 |:---|:---|
-| **IBM Granite 4.1:3b** (Local) | `ollama pull granite3.1-dense:8b` — requires Ollama running locally |
+| **IBM Granite 4.1:3b** (Local) | `ollama pull granite4.1:3b` — requires Ollama running locally (or via `host.docker.internal:11434` in Docker) |
 | **NVIDIA NIM Cloud** | Create a free key at [build.nvidia.com](https://build.nvidia.com/), add `NVIDIA_API_KEY` to `.env` |
 | **Deterministic Fallback** | Zero-cost, sub-second. No external services needed. Default mode. |
 
@@ -240,23 +243,27 @@ Full OpenAPI spec available at `/docs` when the server is running.
 NovaQure/
 ├── backend/
 │   ├── agents/            # LangChain ReAct agent, tools, orchestrator
-│   ├── api/routes/        # FastAPI route handlers (13 route modules)
+│   ├── api/routes/        # FastAPI route handlers (12 route modules)
 │   ├── evaluation/        # Chemprop D-MPNN, RDKit (QED, SA, Lipinski), AQKC, NQRE
 │   ├── generation/        # JTVAE encoder, SELFIES mutation engine, latent space
 │   ├── sampling/          # 8-qubit QCBM sampler, diversity/novelty filters
 │   ├── proteins/          # Multi-target protein registry (5 targets)
 │   ├── pipeline/          # End-to-end pipeline orchestration service
-│   ├── models/chemprop/   # Pre-trained GNN model weights (.pt files)
 │   ├── database/          # SQLAlchemy models & migrations
 │   ├── auth/              # JWT authentication & bcrypt hashing
 │   ├── configs/           # Chemprop, LLM, and system configuration
+│   ├── Dockerfile         # CPU-optimized PyTorch/RDKit container
 │   └── tests/             # pytest test suite
 ├── frontend/
 │   ├── src/pages/         # Dashboard, Molecules, Rankings, Reliability, Projects
 │   ├── src/components/    # 3Dmol viewer, SelectivityRadar, TargetSelector, charts
-│   └── src/api/           # Typed API client services
+│   ├── src/api/           # Typed API client services
+│   └── Dockerfile         # Multi-stage Vite build + Nginx reverse-proxy
+├── datasets/              # Curated ChEMBL target datasets (EGFR, KRAS, BACE1, HER2, BRAF)
+├── models/                # Pre-trained models (Chemprop D-MPNN weights & JTVAE checkpoints)
+├── deliverables/          # Research manuscript (LaTeX), presentations & reports
 ├── scripts/               # Model training & data pipeline scripts
-├── docker-compose.yml     # Container orchestration
+├── docker-compose.yml     # Multi-container orchestration (Backend + Frontend + Cloudflare Tunnel)
 └── requirements.txt       # Python dependencies
 ```
 
