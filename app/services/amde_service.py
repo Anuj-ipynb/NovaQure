@@ -129,8 +129,8 @@ class AMDEService:
                 return _AMDE_LLM_CACHE[cache_key]
 
             prompt = (
-                f"As a medicinal chemist, provide a detailed 2 to 3-sentence scientific rationale and structural optimization recommendation for candidate molecule '{smiles}'. "
-                f"Evaluation decision: {decision} (primary observation: {reason}). Detail specific functional group modifications to improve drug-likeness and selectivity."
+                f"You are a medicinal chemist. In 1 to 2 direct sentences (under 40 words total), state why candidate molecule '{smiles}' is {decision} "
+                f"due to {reason}, and suggest one specific chemical modification. Output only the sentences. Do not use titles, headers, or bullet points."
             )
 
             if info["type"] == "nvidia":
@@ -144,7 +144,7 @@ class AMDEService:
                 body = {
                     "model": info["model"],
                     "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 150,
+                    "max_tokens": 75,
                     "temperature": 0.2
                 }
                 req = urllib.request.Request(
@@ -153,10 +153,14 @@ class AMDEService:
                     headers=headers,
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=30.0) as response:
+                with urllib.request.urlopen(req, timeout=15.0) as response:
                     if response.status == 200:
                         data = json.loads(response.read().decode("utf-8"))
                         text = data["choices"][0]["message"]["content"].strip()
+                        if text:
+                            last_p = max(text.rfind("."), text.rfind("!"), text.rfind("?"))
+                            if last_p > 20:
+                                text = text[:last_p + 1].strip()
                         print(f"INFO: [AMDE Agent] Live NVIDIA Nemotron response: {text}")
                         res = (info["model"], text)
                         _AMDE_LLM_CACHE[cache_key] = res
@@ -169,7 +173,7 @@ class AMDEService:
                     "prompt": prompt,
                     "stream": False,
                     "options": {
-                        "num_predict": 150,
+                        "num_predict": 75,
                         "temperature": 0.2
                     }
                 }
@@ -179,12 +183,16 @@ class AMDEService:
                     headers=headers,
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=30.0) as response:
+                with urllib.request.urlopen(req, timeout=15.0) as response:
                     if response.status == 200:
                         data = json.loads(response.read().decode("utf-8"))
                         text = data.get("response", "").strip()
-                        if text and not text.endswith((".", "!", "?")):
-                            text += "."
+                        if text:
+                            last_p = max(text.rfind("."), text.rfind("!"), text.rfind("?"))
+                            if last_p > 20:
+                                text = text[:last_p + 1].strip()
+                            elif not text.endswith((".", "!", "?")):
+                                text += "."
                         print(f"INFO: [AMDE Agent] Live IBM Granite Ollama response: {text}")
                         res = (info["model"], text)
                         _AMDE_LLM_CACHE[cache_key] = res
