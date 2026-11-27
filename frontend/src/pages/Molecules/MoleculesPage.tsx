@@ -164,7 +164,7 @@ export default function MoleculesPage() {
                     >
                         DISCOVERY STUDIO // ACTIVE TARGET: {selectedTarget} ({activeTargetInfo.name})
                     </span>
-                    <TargetSelector selectedTarget={selectedTarget} onSelectTarget={setSelectedTarget} />
+                    <TargetSelector selectedTarget={selectedTarget} onSelectTarget={handleSelectTarget} />
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20 }}>

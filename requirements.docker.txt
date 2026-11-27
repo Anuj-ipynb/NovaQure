@@ -1,0 +1,72 @@
+# ----------------------------
+# Backend API
+# ----------------------------
+fastapi==0.138.0
+uvicorn==0.49.0
+pydantic==2.13.4
+python-dotenv==1.2.2
+python-multipart==0.0.32
+aiofiles
+
+# ----------------------------
+# Database
+# ----------------------------
+SQLAlchemy==2.0.51
+alembic==1.18.4
+
+# ----------------------------
+# Authentication
+# ----------------------------
+passlib==1.7.4
+bcrypt==5.0.0
+python-jose==3.5.0
+email-validator==2.3.0
+
+# ----------------------------
+# Scientific Computing
+# ----------------------------
+numpy
+pandas
+scikit-learn
+scipy
+
+# ----------------------------
+# Visualization
+# ----------------------------
+matplotlib
+plotly
+py3Dmol
+
+# ----------------------------
+# AI / ML
+# ----------------------------
+chemprop
+
+# ----------------------------
+# Cheminformatics
+# ----------------------------
+rdkit
+selfies
+networkx
+
+# ----------------------------
+# Quantum Computing
+# ----------------------------
+pennylane
+qiskit
+
+# ----------------------------
+# LLM Infrastructure
+# ----------------------------
+langchain
+langchain-community
+ollama
+
+# ----------------------------
+# HTTP & Utilities
+# ----------------------------
+requests
+httpx
+pytest
+rich
+tqdm

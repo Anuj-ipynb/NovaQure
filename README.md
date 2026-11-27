@@ -46,14 +46,14 @@ Drug discovery is broken. A single approved compound takes **10–15 years**, co
   ┌──────────────────────────────────────────────────────────┐
   │  1 ·  GENERATIVE ENGINE                                  │
   │       Junction Tree VAE  →  128-dim latent space         │
-  │       8-Qubit QCBM (PennyLane)  →  quantum sampling     │
+  │       8-Qubit QCBM (PennyLane)  →  quantum sampling      │
   └────────────────────────┬─────────────────────────────────┘
                            │  SELFIES / SMILES candidates
                            ▼
   ┌──────────────────────────────────────────────────────────┐
   │  2 ·  EVALUATION LAYER                                   │
-  │       Chemprop D-MPNN  →  pIC₅₀ binding affinity        │
-  │       RDKit Profiler   →  QED · SA · Lipinski · LogP    │
+  │       Chemprop D-MPNN  →  pIC₅₀ binding affinity         │
+  │       RDKit Profiler   →  QED · SA · Lipinski · LogP     │
   └────────────────────────┬─────────────────────────────────┘
                            │  raw telemetry & energies
                            ▼
@@ -73,10 +73,10 @@ Drug discovery is broken. A single approved compound takes **10–15 years**, co
                            │  final ranked candidates
                            ▼
   ┌──────────────────────────────────────────────────────────┐
-  │  5 ·  DISCOVERY STUDIO  (React + 3Dmol.js)              │
-  │       Pareto frontier charts · 5-axis radar profiles    │
-  │       Interactive 3D molecular surface renderer         │
-  │       Live pipeline execution progress tracker          │
+  │  5 ·  DISCOVERY STUDIO  (React + 3Dmol.js)               │
+  │       Pareto frontier charts · 5-axis radar profiles     │
+  │       Interactive 3D molecular surface renderer          │
+  │       Live pipeline execution progress tracker           │
   └──────────────────────────────────────────────────────────┘
 ```
 

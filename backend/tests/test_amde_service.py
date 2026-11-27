@@ -21,27 +21,27 @@ def _wrap(qed=0.8, affinity=0.7, reliability=0.8):
 
 
 def test_keep_decision(amde):
-    """All metrics passing thresholds → decision should be 'keep'."""
+    """All metrics passing thresholds → decision should be 'KEEP'."""
     result = amde.decide(_wrap(qed=0.8, affinity=0.7, reliability=0.8))
-    assert result["decision"] == "keep"
+    assert result["decision"] == "KEEP"
 
 
 def test_refine_on_low_qed(amde):
-    """Low QED → decision should be 'refine'."""
+    """Low QED → decision should be 'REFINE'."""
     result = amde.decide(_wrap(qed=0.3, affinity=0.7, reliability=0.8))
-    assert result["decision"] == "refine"
+    assert result["decision"] == "REFINE"
 
 
 def test_refine_on_low_affinity(amde):
-    """Low affinity → decision should be 'refine'."""
+    """Low affinity → decision should be 'REFINE'."""
     result = amde.decide(_wrap(qed=0.8, affinity=0.2, reliability=0.8))
-    assert result["decision"] == "refine"
+    assert result["decision"] == "REFINE"
 
 
 def test_regenerate_on_low_reliability(amde):
-    """Low reliability → decision should be 'regenerate'."""
+    """Low reliability → decision should be 'REGENERATE'."""
     result = amde.decide(_wrap(qed=0.8, affinity=0.7, reliability=0.2))
-    assert result["decision"] == "regenerate"
+    assert result["decision"] == "REGENERATE"
 
 
 def test_confidence_calculation(amde):

@@ -72,16 +72,16 @@ class AMDEService:
 
         # Final Synthesis
         passed_count = sum(1 for a in assessments if a.passed)
-        if passed_count == 3:
+        if not reliability_assessment.passed or passed_count < 2:
+            decision = "REGENERATE"
+            reason = f"unacceptable quantum reliability ({reliability_assessment.reason})" if not reliability_assessment.passed else "multiple failed criteria"
+        elif passed_count == 3:
             decision = "KEEP"
             reason = "all clinical criteria satisfied"
-        elif passed_count == 2:
+        else:
             decision = "REFINE"
             failed = [a.reason for a in assessments if not a.passed][0]
             reason = f"borderline performance due to {failed}"
-        else:
-            decision = "REGENERATE"
-            reason = "multiple failed criteria"
 
         confidence = round(sum(a.score for a in assessments) / len(assessments), 2)
 
@@ -129,8 +129,8 @@ class AMDEService:
                 return _AMDE_LLM_CACHE[cache_key]
 
             prompt = (
-                f"As a medicinal chemist, give a 1-sentence recommendation for molecule '{smiles}'. "
-                f"Current evaluation decision: {decision} due to {reason}."
+                f"As a medicinal chemist, provide a detailed 2 to 3-sentence scientific rationale and structural optimization recommendation for candidate molecule '{smiles}'. "
+                f"Evaluation decision: {decision} (primary observation: {reason}). Detail specific functional group modifications to improve drug-likeness and selectivity."
             )
 
             if info["type"] == "nvidia":
@@ -144,7 +144,7 @@ class AMDEService:
                 body = {
                     "model": info["model"],
                     "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 60,
+                    "max_tokens": 150,
                     "temperature": 0.2
                 }
                 req = urllib.request.Request(
@@ -153,7 +153,7 @@ class AMDEService:
                     headers=headers,
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=15.0) as response:
+                with urllib.request.urlopen(req, timeout=30.0) as response:
                     if response.status == 200:
                         data = json.loads(response.read().decode("utf-8"))
                         text = data["choices"][0]["message"]["content"].strip()
@@ -169,7 +169,7 @@ class AMDEService:
                     "prompt": prompt,
                     "stream": False,
                     "options": {
-                        "num_predict": 25,
+                        "num_predict": 150,
                         "temperature": 0.2
                     }
                 }
@@ -179,7 +179,7 @@ class AMDEService:
                     headers=headers,
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=15.0) as response:
+                with urllib.request.urlopen(req, timeout=30.0) as response:
                     if response.status == 200:
                         data = json.loads(response.read().decode("utf-8"))
                         text = data.get("response", "").strip()

@@ -1,0 +1,17 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.git/
+.github/
+.gitignore
+frontend/node_modules/
+frontend/dist/
+deliverables/
+reports/
+tmp/
+*.log
+novaqure.db
